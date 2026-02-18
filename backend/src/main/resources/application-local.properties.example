@@ -1,0 +1,9 @@
+# Copy this file to application-local.properties and fill in your local MySQL credentials.
+# application-local.properties is gitignored and will never be committed.
+# Run the backend with: spring.profiles.active=local (or set SPRING_PROFILES_ACTIVE=local)
+
+# Optional: Stripe (for Connect onboarding and checkout)
+# stripe.secret-key=sk_test_...
+# stripe.webhook-secret=whsec_...
+# stripe.connect.success-url=http://localhost:5173/account?stripe=success
+# stripe.connect.refresh-url=http://localhost:5173/account?stripe=refresh

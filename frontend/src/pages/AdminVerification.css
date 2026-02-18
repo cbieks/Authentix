@@ -1,0 +1,19 @@
+.admin-verification-page h1 { margin: 0 0 0.5rem; }
+.admin-hint, .admin-empty { color: #6b7280; margin-bottom: 1rem; }
+.admin-error { color: #dc2626; }
+.admin-list { list-style: none; padding: 0; margin: 0; }
+.admin-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+.admin-item a { flex: 1; font-weight: 500; }
+.admin-item-price { color: #059669; font-weight: 600; }
+.admin-item-actions { display: flex; gap: 0.5rem; }
+.admin-btn { padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; cursor: pointer; border: none; }
+.admin-btn-approve { background: #059669; color: white; }
+.admin-btn-reject { background: #f3f4f6; color: #374151; }

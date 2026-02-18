@@ -1,0 +1,49 @@
+.public-profile-page {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.public-profile-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.public-profile-photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.public-profile-card h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+}
+
+.public-profile-bio {
+  color: #4b5563;
+  margin: 0.5rem 0 1rem;
+  white-space: pre-wrap;
+}
+
+.public-profile-contact {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.public-profile-contact.muted {
+  color: #9ca3af;
+}
+
+.public-profile-back {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.public-profile-page .error {
+  color: #dc2626;
+}

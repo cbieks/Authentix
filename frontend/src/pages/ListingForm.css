@@ -1,0 +1,88 @@
+.listing-form-page h1 {
+  margin: 0 0 1rem;
+}
+
+.listing-form {
+  max-width: 480px;
+}
+
+.listing-form label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.listing-form input,
+.listing-form select,
+.listing-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.listing-form-images {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.listing-form-images input {
+  flex: 1;
+  margin-top: 0;
+}
+
+.listing-form-image-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.listing-form-image-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.listing-form-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.listing-form-error {
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.listing-form button[type="submit"] {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.listing-form button[type="submit"]:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.listing-form button[type="button"] {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}

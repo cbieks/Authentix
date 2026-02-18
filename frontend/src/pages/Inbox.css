@@ -1,0 +1,16 @@
+.inbox-page h1 { margin: 0 0 1rem; }
+.inbox-empty { color: #6b7280; }
+.inbox-list { list-style: none; padding: 0; margin: 0; }
+.inbox-item { border-bottom: 1px solid #e5e7eb; }
+.inbox-item-unread { background: #f0f9ff; }
+.inbox-item-link {
+  display: block;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+.inbox-item-link:hover { background: #f9fafb; }
+.inbox-item-listing { font-weight: 600; display: block; }
+.inbox-item-from { font-size: 0.9rem; color: #6b7280; }
+.inbox-item-body { margin: 0.5rem 0 0; font-size: 0.95rem; white-space: pre-wrap; }
+.inbox-item-time { font-size: 0.8rem; color: #9ca3af; }
