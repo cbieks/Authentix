@@ -71,11 +71,6 @@ public class ListingController {
         return ResponseEntity.ok(listingService.setStatus(id, status));
     }
 
-    @PostMapping("/{id}/verification")
-    public ResponseEntity<ListingDto> requestVerification(@PathVariable Long id) {
-        return ResponseEntity.ok(listingService.requestVerification(id));
-    }
-
     @PostMapping("/{id}/watchlist")
     public ResponseEntity<Void> addToWatchlist(@PathVariable Long id) {
         watchlistService.add(id);

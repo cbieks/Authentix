@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { resizeListingImage, MAX_LISTING_IMAGES } from '../utils/listingImage'
 import './ListingForm.css'
 
 export default function EditListing() {
@@ -9,6 +10,7 @@ export default function EditListing() {
   const [categories, setCategories] = useState([])
   const [form, setForm] = useState(null)
   const [imageUrl, setImageUrl] = useState('')
+  const [imageUploading, setImageUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -20,7 +22,6 @@ export default function EditListing() {
         title: data.title,
         description: data.description || '',
         price: String(data.price),
-        currency: data.currency || 'USD',
         condition: data.condition || '',
         shippingOption: data.shippingOption || 'SHIP',
         images: data.images || [],
@@ -28,8 +29,32 @@ export default function EditListing() {
       .catch(() => setError('Listing not found'))
   }, [id])
 
-  function addImage() {
-    if (imageUrl.trim()) {
+  async function handleImageFiles(e) {
+    const files = e.target.files ? [...e.target.files] : []
+    if (files.length === 0 || !form) return
+    setImageUploading(true)
+    setError('')
+    try {
+      const added = []
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue
+        if (form.images.length + added.length >= MAX_LISTING_IMAGES) break
+        const dataUrl = await resizeListingImage(file)
+        added.push(dataUrl)
+      }
+      if (added.length > 0) {
+        setForm((f) => ({ ...f, images: [...f.images, ...added].slice(0, MAX_LISTING_IMAGES) }))
+      }
+    } catch (err) {
+      setError(err.message || 'Could not process image.')
+    } finally {
+      setImageUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  function addImageUrl() {
+    if (imageUrl.trim() && form && form.images.length < MAX_LISTING_IMAGES) {
       setForm((f) => ({ ...f, images: [...f.images, imageUrl.trim()] }))
       setImageUrl('')
     }
@@ -48,7 +73,6 @@ export default function EditListing() {
       title: form.title,
       description: form.description || undefined,
       price: Number(form.price),
-      currency: form.currency,
       condition: form.condition || undefined,
       shippingOption: form.shippingOption,
       images: form.images,
@@ -97,7 +121,7 @@ export default function EditListing() {
           />
         </label>
         <label>
-          Price (USD) *
+          Price *
           <input
             type="number"
             step="0.01"
@@ -124,18 +148,36 @@ export default function EditListing() {
             <option value="LOCAL_PICKUP">Local pickup</option>
           </select>
         </label>
-        <label>
-          Image URLs
-          <div className="listing-form-images">
-            <input
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
-            />
-            <button type="button" onClick={addImage}>Add</button>
-          </div>
+        <div className="listing-form-photos-section">
+          <label>
+            Photos (e.g. different angles)
+            <div className="listing-form-images">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageFiles}
+                disabled={form.images.length >= MAX_LISTING_IMAGES || imageUploading}
+                className="listing-form-file-input"
+                aria-label="Upload listing images"
+              />
+              <span className="listing-form-images-hint">
+                {form.images.length} / {MAX_LISTING_IMAGES} — or paste URL:
+              </span>
+              <input
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://..."
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImageUrl())}
+                disabled={form.images.length >= MAX_LISTING_IMAGES}
+              />
+              <button type="button" onClick={addImageUrl} disabled={form.images.length >= MAX_LISTING_IMAGES || !imageUrl.trim()}>
+                Add URL
+              </button>
+            </div>
+          </label>
+          {imageUploading && <p className="listing-form-uploading">Processing…</p>}
           {form.images.length > 0 && (
             <ul className="listing-form-image-list">
               {form.images.map((url, i) => (
@@ -146,7 +188,7 @@ export default function EditListing() {
               ))}
             </ul>
           )}
-        </label>
+        </div>
         <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
       </form>
     </div>

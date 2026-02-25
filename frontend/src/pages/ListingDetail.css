@@ -27,6 +27,14 @@
   justify-content: center;
 }
 
+.listing-detail-gallery.clickable {
+  cursor: pointer;
+}
+
+.listing-detail-gallery.clickable:hover {
+  background: #e5e7eb;
+}
+
 .listing-detail-gallery img {
   max-width: 100%;
   max-height: 100%;
@@ -35,6 +43,102 @@
 
 .listing-detail-no-image {
   color: #9ca3af;
+}
+
+/* Image viewer overlay (click product → left/right arrows) */
+.listing-detail-image-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.listing-detail-image-viewer {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-detail-image-viewer img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+}
+
+.listing-detail-image-viewer-close {
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  z-index: 2;
+  opacity: 0.85;
+}
+
+.listing-detail-image-viewer-close:hover {
+  opacity: 1;
+}
+
+.listing-detail-image-viewer-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.listing-detail-image-viewer-arrow:hover {
+  background: rgba(255, 255, 255, 0.35);
+  opacity: 1;
+}
+
+.listing-detail-image-viewer-arrow.left {
+  left: -4rem;
+}
+
+.listing-detail-image-viewer-arrow.right {
+  right: -4rem;
+}
+
+@media (max-width: 768px) {
+  .listing-detail-image-viewer-arrow.left {
+    left: 0.5rem;
+  }
+  .listing-detail-image-viewer-arrow.right {
+    right: 0.5rem;
+  }
+}
+
+.listing-detail-image-viewer-counter {
+  position: absolute;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
 }
 
 .listing-detail-info h1 {

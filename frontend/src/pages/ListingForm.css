@@ -10,7 +10,7 @@
   display: block;
   margin-bottom: 1rem;
   font-weight: 500;
-  color: #374151;
+  color: #f8fafc;
 }
 
 .listing-form input,
@@ -24,15 +24,45 @@
   border-radius: 8px;
 }
 
+.listing-form-photos-section {
+  margin-bottom: 1rem;
+}
+
+.listing-form-photos-section .listing-form-image-list {
+  margin-top: 0.5rem;
+}
+
 .listing-form-images {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
   margin-top: 0.35rem;
 }
 
-.listing-form-images input {
-  flex: 1;
+.listing-form-file-input {
+  flex: 0 0 auto;
   margin-top: 0;
+  font-size: 0.9rem;
+  max-width: 100%;
+}
+
+.listing-form-images-hint {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  flex: 0 0 100%;
+}
+
+.listing-form-images input[type="url"] {
+  flex: 1;
+  min-width: 120px;
+  margin-top: 0;
+}
+
+.listing-form-uploading {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
 }
 
 .listing-form-image-list {

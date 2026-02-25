@@ -8,7 +8,8 @@ public class UpdateProfileRequest {
     @Size(max = 100)
     private String displayName;
 
-    @Size(max = 500)
+    /** URL or data URL (base64 image); MEDIUMTEXT supports up to 16MB. */
+    @Size(max = 2_000_000)
     private String profilePhotoUrl;
 
     @Size(max = 1000)

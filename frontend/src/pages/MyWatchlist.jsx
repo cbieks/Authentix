@@ -16,11 +16,15 @@ export default function MyWatchlist() {
 
   useEffect(() => { load() }, [])
 
-  async function remove(id) {
+  async function remove(e, id) {
+    e.preventDefault()
+    e.stopPropagation()
     try {
       await api(`/api/listings/${id}/watchlist`, { method: 'DELETE' })
       setListings((prev) => prev.filter((l) => l.id !== id))
-    } catch (e) {}
+    } catch (err) {
+      console.error('Failed to remove from watchlist', err)
+    }
   }
 
   if (loading) return <div className="layout-main"><p>Loading…</p></div>
@@ -47,7 +51,7 @@ export default function MyWatchlist() {
                   <p className="listing-card-meta">{listing.categoryName}</p>
                 </div>
               </Link>
-              <button type="button" className="watchlist-remove" onClick={() => remove(listing.id)} aria-label="Remove from watchlist">
+              <button type="button" className="watchlist-remove" onClick={(e) => remove(e, listing.id)} aria-label="Remove from watchlist">
                 Remove
               </button>
             </div>

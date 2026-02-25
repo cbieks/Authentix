@@ -26,8 +26,14 @@ export default function ListingDetail() {
   const [messageText, setMessageText] = useState('')
   const [messageSending, setMessageSending] = useState(false)
   const [messageSent, setMessageSent] = useState(false)
-  const [verificationRequesting, setVerificationRequesting] = useState(false)
+  const [imageViewerOpen, setImageViewerOpen] = useState(false)
+  const [imageViewerIndex, setImageViewerIndex] = useState(0)
   const paymentSuccess = searchParams.get('payment') === 'success'
+
+  const images = listing?.images ?? []
+  const hasMultipleImages = images.length > 1
+  const goPrevImage = () => setImageViewerIndex((i) => (i <= 0 ? images.length - 1 : i - 1))
+  const goNextImage = () => setImageViewerIndex((i) => (i >= images.length - 1 ? 0 : i + 1))
 
   const refetch = () => {
     return api(`/api/listings/${id}`)
@@ -64,6 +70,17 @@ export default function ListingDetail() {
     }
   }, [listing?.id])
 
+  useEffect(() => {
+    if (!imageViewerOpen) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setImageViewerOpen(false)
+      if (e.key === 'ArrowLeft') goPrevImage()
+      if (e.key === 'ArrowRight') goNextImage()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [imageViewerOpen, images.length])
+
   async function toggleWatchlist() {
     if (!user || !listing) return
     try {
@@ -87,16 +104,6 @@ export default function ListingDetail() {
       setMessageText('')
     } catch (e) {}
     setMessageSending(false)
-  }
-
-  async function requestVerification() {
-    if (!listing || verificationRequesting) return
-    setVerificationRequesting(true)
-    try {
-      await api(`/api/listings/${listing.id}/verification`, { method: 'POST' })
-      refetch()
-    } catch (e) {}
-    setVerificationRequesting(false)
   }
 
   const isOwnListing = user && listing && listing.sellerId === user.id
@@ -132,23 +139,51 @@ export default function ListingDetail() {
   return (
     <div className="listing-detail-page">
       <div className="listing-detail-main">
-        <div className="listing-detail-gallery">
-          {listing.images?.length > 0 ? (
-            listing.images.map((url, i) => (
-              <img key={i} src={url} alt="" />
-            ))
+        <div
+          className={`listing-detail-gallery ${images.length > 0 ? 'clickable' : ''}`}
+          onClick={() => {
+            if (images.length > 0) {
+              setImageViewerIndex(0)
+              setImageViewerOpen(true)
+            }
+          }}
+          role={images.length > 0 ? 'button' : undefined}
+          aria-label={images.length > 0 ? 'View photos' : undefined}
+        >
+          {images.length > 0 ? (
+            <img src={images[0]} alt="" />
           ) : (
             <div className="listing-detail-no-image">No image</div>
           )}
         </div>
+        {imageViewerOpen && images.length > 0 && (
+          <div
+            className="listing-detail-image-viewer-overlay"
+            onClick={() => setImageViewerOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Photo viewer"
+          >
+            <div className="listing-detail-image-viewer" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="listing-detail-image-viewer-close" onClick={() => setImageViewerOpen(false)} aria-label="Close">×</button>
+              {hasMultipleImages && (
+                <button type="button" className="listing-detail-image-viewer-arrow left" onClick={goPrevImage} aria-label="Previous photo">←</button>
+              )}
+              <img src={images[imageViewerIndex]} alt="" />
+              {hasMultipleImages && (
+                <button type="button" className="listing-detail-image-viewer-arrow right" onClick={goNextImage} aria-label="Next photo">→</button>
+              )}
+              {hasMultipleImages && (
+                <span className="listing-detail-image-viewer-counter">{imageViewerIndex + 1} / {images.length}</span>
+              )}
+            </div>
+          </div>
+        )}
         <div className="listing-detail-info">
           <span className="listing-detail-category">{listing.categoryName}</span>
           <h1>{listing.title}</h1>
           <p className="listing-detail-price">${Number(listing.price).toFixed(2)}</p>
           {listing.status === 'SOLD' && <span className="listing-detail-badge listing-detail-badge-sold">Sold</span>}
-          {listing.verificationStatus === 'VERIFIED' && listing.status !== 'SOLD' && (
-            <span className="listing-detail-badge">Verified</span>
-          )}
           {listing.condition && <p><strong>Condition:</strong> {listing.condition}</p>}
           <p><strong>Shipping:</strong> {listing.shippingOption === 'SHIP' ? 'Shipping' : 'Local pickup'}</p>
           {paymentSuccess && <p className="listing-detail-payment-success">Payment successful! This item is sold.</p>}
@@ -166,8 +201,14 @@ export default function ListingDetail() {
           )}
           {user && (
             <div className="listing-detail-watchlist">
-              <button type="button" className={`listing-detail-watchlist-btn ${watched ? 'saved' : ''}`} onClick={toggleWatchlist}>
-                {watched ? '♥ Saved' : '♡ Save'}
+              <button
+                type="button"
+                className={`listing-detail-watchlist-btn ${watched ? 'saved' : ''}`}
+                onClick={toggleWatchlist}
+                title={watched ? 'Remove from watchlist' : 'Save to watchlist'}
+                aria-label={watched ? 'Remove from watchlist' : 'Save to watchlist'}
+              >
+                {watched ? '♥ Saved (click to remove)' : '♡ Save'}
               </button>
             </div>
           )}
@@ -182,13 +223,6 @@ export default function ListingDetail() {
                   <button type="submit" disabled={messageSending || !messageText.trim()}>{messageSending ? 'Sending…' : 'Send message'}</button>
                 </form>
               )}
-            </div>
-          )}
-          {isOwnListing && listing.verificationStatus === 'UNVERIFIED' && (
-            <div className="listing-detail-verification">
-              <button type="button" className="listing-detail-verification-btn" onClick={requestVerification} disabled={verificationRequesting}>
-                {verificationRequesting ? 'Requesting…' : 'Request verification'}
-              </button>
             </div>
           )}
           <div className="listing-detail-description">

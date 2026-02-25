@@ -17,8 +17,6 @@ public class UpdateListingRequest {
     private String description;
     @DecimalMin("0")
     private BigDecimal price;
-    @Size(max = 3)
-    private String currency;
     @Size(max = 100)
     private String condition;
     private List<String> images;

@@ -16,7 +16,6 @@ import EditListing from './pages/EditListing'
 import MyListings from './pages/MyListings'
 import MyWatchlist from './pages/MyWatchlist'
 import Inbox from './pages/Inbox'
-import AdminVerification from './pages/AdminVerification'
 
 export default function App() {
   useEffect(() => { loadAnalytics() }, [])
@@ -58,14 +57,6 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Inbox />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/verification"
-          element={
-            <ProtectedRoute>
-              <AdminVerification />
             </ProtectedRoute>
           }
         />

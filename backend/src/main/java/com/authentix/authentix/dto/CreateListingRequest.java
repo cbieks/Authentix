@@ -27,9 +27,6 @@ public class CreateListingRequest {
     @DecimalMin("0")
     private BigDecimal price;
 
-    @Size(max = 3)
-    private String currency = "USD";
-
     @Size(max = 100)
     private String condition;
 

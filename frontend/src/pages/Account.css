@@ -185,3 +185,82 @@
   border-top: 1px solid #e5e7eb;
   font-size: 0.95rem;
 }
+
+/* Crop modal */
+.crop-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.crop-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+.crop-modal-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+.crop-modal-hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: center;
+}
+.crop-preview-wrap {
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e5e7eb;
+  cursor: grab;
+  flex-shrink: 0;
+  margin: 0 auto 1.25rem;
+}
+.crop-preview-wrap:active {
+  cursor: grabbing;
+}
+.crop-preview-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+.crop-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.crop-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.crop-btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+.crop-btn-cancel:hover {
+  background: #e5e7eb;
+}
+.crop-btn-apply {
+  background: #2563eb;
+  color: white;
+  border: none;
+}
+.crop-btn-apply:hover {
+  background: #1d4ed8;
+}

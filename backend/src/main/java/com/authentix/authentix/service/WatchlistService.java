@@ -43,9 +43,10 @@ public class WatchlistService {
                 .build());
     }
 
+    @Transactional
     public void remove(Long listingId) {
         Long userId = getCurrentUserId();
-        watchlistRepository.deleteByUserIdAndListingId(userId, listingId);
+        watchlistRepository.deleteByUser_IdAndListing_Id(userId, listingId);
     }
 
     public List<ListingDto> getMyWatchlist() {

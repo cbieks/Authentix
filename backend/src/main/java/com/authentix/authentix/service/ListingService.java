@@ -72,7 +72,6 @@ public class ListingService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
-                .currency(request.getCurrency() != null ? request.getCurrency() : "USD")
                 .condition(request.getCondition())
                 .images(request.getImages() != null ? request.getImages() : List.of())
                 .status(ListingStatus.DRAFT)
@@ -98,7 +97,6 @@ public class ListingService {
         if (request.getTitle() != null) listing.setTitle(request.getTitle());
         if (request.getDescription() != null) listing.setDescription(request.getDescription());
         if (request.getPrice() != null) listing.setPrice(request.getPrice());
-        if (request.getCurrency() != null) listing.setCurrency(request.getCurrency());
         if (request.getCondition() != null) listing.setCondition(request.getCondition());
         if (request.getImages() != null) listing.setImages(request.getImages());
         if (request.getShippingOption() != null) listing.setShippingOption(request.getShippingOption());
@@ -139,48 +137,4 @@ public class ListingService {
         return ListingDto.fromEntity(listing);
     }
 
-    @Transactional
-    public ListingDto requestVerification(Long id) {
-        Listing listing = listingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
-        User current = getCurrentUser();
-        if (!listing.getSeller().getId().equals(current.getId())) {
-            throw new IllegalArgumentException("Not authorized");
-        }
-        if (listing.getVerificationStatus() != VerificationStatus.UNVERIFIED) {
-            throw new IllegalArgumentException("Can only request verification for unverified listings");
-        }
-        listing.setVerificationStatus(VerificationStatus.PENDING);
-        listing = listingRepository.save(listing);
-        return ListingDto.fromEntity(listing);
-    }
-
-    public boolean isAdmin() {
-        User current = getCurrentUser();
-        return adminEmail != null && !adminEmail.isBlank() && adminEmail.equalsIgnoreCase(current.getEmail());
-    }
-
-    @Transactional
-    public ListingDto adminSetVerification(Long id, VerificationStatus status) {
-        if (!isAdmin()) {
-            throw new IllegalArgumentException("Admin only");
-        }
-        if (status != VerificationStatus.VERIFIED && status != VerificationStatus.UNVERIFIED) {
-            throw new IllegalArgumentException("Admin can set only VERIFIED or UNVERIFIED");
-        }
-        Listing listing = listingRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
-        listing.setVerificationStatus(status);
-        listing = listingRepository.save(listing);
-        return ListingDto.fromEntity(listing);
-    }
-
-    public Page<ListingDto> getListingsPendingVerification(int page, int size) {
-        if (!isAdmin()) {
-            throw new IllegalArgumentException("Admin only");
-        }
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return listingRepository.findByVerificationStatusOrderByCreatedAtDesc(VerificationStatus.PENDING, pageable)
-                .map(ListingDto::fromEntity);
-    }
 }

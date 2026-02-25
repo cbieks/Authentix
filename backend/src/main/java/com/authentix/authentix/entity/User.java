@@ -27,7 +27,7 @@ public class User {
     @Column(name = "display_name")
     private String displayName;
 
-    @Column(name = "profile_photo_url", columnDefinition = "TEXT")
+    @Column(name = "profile_photo_url", columnDefinition = "MEDIUMTEXT")
     private String profilePhotoUrl;
 
     @Column(columnDefinition = "TEXT")

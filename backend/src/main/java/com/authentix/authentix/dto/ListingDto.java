@@ -3,7 +3,6 @@ package com.authentix.authentix.dto;
 import com.authentix.authentix.entity.Listing;
 import com.authentix.authentix.entity.ListingStatus;
 import com.authentix.authentix.entity.ShippingOption;
-import com.authentix.authentix.entity.VerificationStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -18,11 +17,9 @@ public class ListingDto {
     private String title;
     private String description;
     private BigDecimal price;
-    private String currency;
     private String condition;
     private List<String> images;
     private ListingStatus status;
-    private VerificationStatus verificationStatus;
     private ShippingOption shippingOption;
     private Long sellerId;
     private String sellerDisplayName;
@@ -38,11 +35,9 @@ public class ListingDto {
         dto.setTitle(listing.getTitle());
         dto.setDescription(listing.getDescription());
         dto.setPrice(listing.getPrice());
-        dto.setCurrency(listing.getCurrency());
         dto.setCondition(listing.getCondition());
         dto.setImages(listing.getImages() != null ? List.copyOf(listing.getImages()) : List.of());
         dto.setStatus(listing.getStatus());
-        dto.setVerificationStatus(listing.getVerificationStatus());
         dto.setShippingOption(listing.getShippingOption());
         dto.setSellerId(listing.getSeller().getId());
         dto.setSellerDisplayName(listing.getSeller().getDisplayName());

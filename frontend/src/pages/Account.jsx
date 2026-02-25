@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/client'
 import './Account.css'
+
+const PROFILE_PHOTO_SIZE = 120
+const CROP_PREVIEW_SIZE = 280
 
 export default function Account() {
   const { user, updateProfile, refetchUser } = useAuth()
@@ -15,6 +18,8 @@ export default function Account() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
   const [payoutsLoading, setPayoutsLoading] = useState(false)
+  const [cropState, setCropState] = useState(null)
+  const cropDragRef = useRef({ isDragging: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 })
 
   useEffect(() => {
     if (user) {
@@ -32,6 +37,18 @@ export default function Account() {
       setSearchParams({}, { replace: true })
     }
   }, [searchParams, refetchUser, setSearchParams])
+
+  useEffect(() => {
+    if (!cropState) return
+    const onMove = (e) => handleCropPointerMove(e)
+    const onUp = () => handleCropPointerUp()
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+    return () => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+    }
+  }, [cropState])
 
   async function handleSetUpPayouts() {
     setPayoutsLoading(true)
@@ -66,47 +83,93 @@ export default function Account() {
     }
   }
 
-  function resizeImageToDataUrl(file, maxSize = 300) {
+  const loadImage = useCallback((src) => {
     return new Promise((resolve, reject) => {
-      const img = document.createElement('img')
-      const url = URL.createObjectURL(file)
-      img.onload = () => {
-        URL.revokeObjectURL(url)
-        const canvas = document.createElement('canvas')
-        let { width, height } = img
-        if (width > height && width > maxSize) {
-          height = (height * maxSize) / width
-          width = maxSize
-        } else if (height > maxSize) {
-          width = (width * maxSize) / height
-          height = maxSize
-        } else {
-          width = Math.min(width, maxSize)
-          height = Math.min(height, maxSize)
-        }
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        resolve(canvas.toDataURL('image/jpeg', 0.85))
-      }
-      img.onerror = () => {
-        URL.revokeObjectURL(url)
-        reject(new Error('Could not load image'))
-      }
-      img.src = url
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = () => reject(new Error('Could not load image'))
+      img.src = src
     })
+  }, [])
+
+  function openCropModal(file) {
+    const url = URL.createObjectURL(file)
+    loadImage(url).then((img) => {
+      const { width, height } = img
+      const scale = Math.max(CROP_PREVIEW_SIZE / width, CROP_PREVIEW_SIZE / height)
+      const scaledW = width * scale
+      const scaledH = height * scale
+      const initialPanX = Math.max(0, (scaledW - CROP_PREVIEW_SIZE) / 2)
+      const initialPanY = Math.max(0, (scaledH - CROP_PREVIEW_SIZE) / 2)
+      setCropState({
+        imageSrc: url,
+        imageWidth: width,
+        imageHeight: height,
+        scale,
+        panX: initialPanX,
+        panY: initialPanY,
+        scaledWidth: scaledW,
+        scaledHeight: scaledH,
+        isLarge: width > PROFILE_PHOTO_SIZE || height > PROFILE_PHOTO_SIZE,
+      })
+    }).catch(() => {
+      URL.revokeObjectURL(url)
+      setMessage('Could not load image.')
+    })
+  }
+
+  function closeCropModal() {
+    if (cropState?.imageSrc) URL.revokeObjectURL(cropState.imageSrc)
+    setCropState(null)
+  }
+
+  function handleCropPointerDown(e) {
+    if (!cropState) return
+    cropDragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, startPanX: cropState.panX, startPanY: cropState.panY }
+  }
+
+  function handleCropPointerMove(e) {
+    if (!cropState || !cropDragRef.current.isDragging) return
+    const { startX, startY, startPanX, startPanY } = cropDragRef.current
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    const maxPanX = Math.max(0, cropState.scaledWidth - CROP_PREVIEW_SIZE)
+    const maxPanY = Math.max(0, cropState.scaledHeight - CROP_PREVIEW_SIZE)
+    setCropState((prev) => ({
+      ...prev,
+      panX: Math.max(0, Math.min(maxPanX, startPanX - dx)),
+      panY: Math.max(0, Math.min(maxPanY, startPanY - dy)),
+    }))
+  }
+
+  function handleCropPointerUp() {
+    cropDragRef.current.isDragging = false
+  }
+
+  async function applyCrop() {
+    if (!cropState) return
+    try {
+      const img = await loadImage(cropState.imageSrc)
+      const canvas = document.createElement('canvas')
+      canvas.width = PROFILE_PHOTO_SIZE
+      canvas.height = PROFILE_PHOTO_SIZE
+      const ctx = canvas.getContext('2d')
+      const srcScale = cropState.scale
+      const srcX = cropState.panX / srcScale
+      const srcY = cropState.panY / srcScale
+      const srcSize = CROP_PREVIEW_SIZE / srcScale
+      ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, PROFILE_PHOTO_SIZE, PROFILE_PHOTO_SIZE)
+      setProfilePhotoUrl(canvas.toDataURL('image/jpeg', 0.88))
+      closeCropModal()
+    } catch (err) {
+      setMessage('Could not apply crop.')
+    }
   }
 
   async function handlePhotoChange(e) {
     const file = e.target.files?.[0]
     if (!file || !file.type.startsWith('image/')) return
-    try {
-      const dataUrl = await resizeImageToDataUrl(file)
-      setProfilePhotoUrl(dataUrl)
-    } catch (err) {
-      setMessage('Could not process image.')
-    }
+    openCropModal(file)
     e.target.value = ''
   }
 
@@ -194,6 +257,40 @@ export default function Account() {
           <Link to="/account/listings">My listings</Link> · <Link to="/account/watchlist">Watchlist</Link> · <Link to="/account/inbox">Inbox</Link> · <Link to="/listings/new">Create listing</Link>
         </p>
       </div>
+
+      {cropState && (
+        <div className="crop-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title">
+          <div className="crop-modal">
+            <h2 id="crop-modal-title" className="crop-modal-title">
+              {cropState.isLarge ? 'Position your photo inside the circle' : 'Position your photo'}
+            </h2>
+            {cropState.isLarge && (
+              <p className="crop-modal-hint">Drag the image so it fits the circle, then click Apply.</p>
+            )}
+            <div
+              className="crop-preview-wrap"
+              style={{ width: CROP_PREVIEW_SIZE, height: CROP_PREVIEW_SIZE }}
+              onPointerDown={handleCropPointerDown}
+            >
+              <div
+                className="crop-preview-inner"
+                style={{
+                  left: -cropState.panX,
+                  top: -cropState.panY,
+                  width: cropState.scaledWidth,
+                  height: cropState.scaledHeight,
+                  backgroundImage: `url(${cropState.imageSrc})`,
+                  backgroundSize: `${cropState.scaledWidth}px ${cropState.scaledHeight}px`,
+                }}
+              />
+            </div>
+            <div className="crop-modal-actions">
+              <button type="button" className="crop-btn crop-btn-cancel" onClick={closeCropModal}>Cancel</button>
+              <button type="button" className="crop-btn crop-btn-apply" onClick={applyCrop}>Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,0 +1,56 @@
+.home-page {
+  padding: 0.5rem 0 2rem;
+}
+
+.home-categories {
+  margin-bottom: 0.5rem;
+}
+
+.home-section {
+  margin-bottom: 2rem;
+}
+
+.home-section .product-carousel-title {
+  margin-bottom: 0;
+}
+
+.home-zip-prompt {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.home-zip-prompt a {
+  color: #5eead4;
+  text-decoration: none;
+}
+
+.home-zip-prompt a:hover {
+  text-decoration: underline;
+}
+
+.home-zip-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.home-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.home-footer p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.home-footer a {
+  color: #a5b4fc;
+}
+
+.home-footer a:hover {
+  text-decoration: underline;
+}

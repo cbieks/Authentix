@@ -43,25 +43,19 @@ public class Listing {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false, length = 3)
-    private String currency = "USD";
-
     @Column(name = "item_condition")
     private String condition;
 
     @ElementCollection
     @CollectionTable(name = "listing_images", joinColumns = @JoinColumn(name = "listing_id"))
-    @Column(name = "url")
+    @Column(name = "url", columnDefinition = "MEDIUMTEXT")
+    @OrderColumn(name = "sort_order")
     @Builder.Default
     private List<String> images = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ListingStatus status = ListingStatus.DRAFT;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "verification_status", nullable = false)
-    private VerificationStatus verificationStatus = VerificationStatus.UNVERIFIED;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "shipping_option", nullable = false)

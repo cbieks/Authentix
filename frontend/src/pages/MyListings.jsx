@@ -33,15 +33,6 @@ export default function MyListings() {
     }
   }
 
-  async function requestVerification(id) {
-    try {
-      await api(`/api/listings/${id}/verification`, { method: 'POST' })
-      setListings((prev) => prev.map((l) => (l.id === id ? { ...l, verificationStatus: 'PENDING' } : l)))
-    } catch (e) {
-      alert(e.message)
-    }
-  }
-
   if (loading) return <p>Loading…</p>
 
   return (
@@ -65,16 +56,13 @@ export default function MyListings() {
               </div>
               <div className="my-listings-item-body">
                 <Link to={`/listings/${listing.id}`} className="my-listings-item-title">{listing.title}</Link>
-                <p className="my-listings-item-meta">${Number(listing.price).toFixed(2)} · {listing.status} {listing.verificationStatus === 'VERIFIED' && '· Verified'}</p>
+                <p className="my-listings-item-meta">${Number(listing.price).toFixed(2)} · {listing.status}</p>
                 <div className="my-listings-item-actions">
                   {listing.status === 'DRAFT' && (
                     <button type="button" onClick={() => setStatus(listing.id, 'ACTIVE')}>Publish</button>
                   )}
                   {listing.status === 'ACTIVE' && (
                     <button type="button" onClick={() => setStatus(listing.id, 'DRAFT')}>Unpublish</button>
-                  )}
-                  {listing.verificationStatus === 'UNVERIFIED' && listing.status === 'ACTIVE' && (
-                    <button type="button" onClick={() => requestVerification(listing.id)}>Request verification</button>
                   )}
                   <Link to={`/listings/${listing.id}/edit`}>Edit</Link>
                   <button type="button" className="my-listings-remove" onClick={() => remove(listing.id)}>Remove</button>
