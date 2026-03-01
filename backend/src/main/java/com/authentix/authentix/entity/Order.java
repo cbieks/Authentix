@@ -51,6 +51,27 @@ public class Order {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "ship_line1", length = 255)
+    private String shipLine1;
+
+    @Column(name = "ship_line2", length = 255)
+    private String shipLine2;
+
+    @Column(name = "ship_city", length = 100)
+    private String shipCity;
+
+    @Column(name = "ship_state", length = 100)
+    private String shipState;
+
+    @Column(name = "ship_postal_code", length = 20)
+    private String shipPostalCode;
+
+    @Column(name = "ship_country", length = 2)
+    private String shipCountry;
+
+    @Column(name = "ship_phone", length = 50)
+    private String shipPhone;
+
     @PrePersist
     void timestamps() {
         if (createdAt == null) createdAt = Instant.now();

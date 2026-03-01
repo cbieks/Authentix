@@ -28,6 +28,9 @@ export default function ListingDetail() {
   const [messageSent, setMessageSent] = useState(false)
   const [imageViewerOpen, setImageViewerOpen] = useState(false)
   const [imageViewerIndex, setImageViewerIndex] = useState(0)
+  const [addresses, setAddresses] = useState([])
+  const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [addressStep, setAddressStep] = useState(false)
   const paymentSuccess = searchParams.get('payment') === 'success'
 
   const images = listing?.images ?? []
@@ -111,13 +114,36 @@ export default function ListingDetail() {
 
   async function handleBuyClick() {
     setCheckoutError(null)
+    setAddressStep(false)
+    setAddresses([])
+    setSelectedAddressId(null)
+    try {
+      const list = await api('/api/addresses')
+      const addrs = Array.isArray(list) ? list : []
+      setAddresses(addrs)
+      if (addrs.length === 0) {
+        setCheckoutError('Add a shipping address first. Go to Account → Addresses.')
+        return
+      }
+      const defaultAddr = addrs.find((a) => a.isDefault) || addrs[0]
+      setSelectedAddressId(defaultAddr.id)
+      setAddressStep(true)
+    } catch (err) {
+      setCheckoutError(err.message || 'Could not load addresses')
+    }
+  }
+
+  async function handleConfirmAddressAndPay() {
+    if (!selectedAddressId || !listing) return
+    setCheckoutError(null)
     setCheckoutLoading(true)
     try {
       const data = await api('/api/orders/create-payment-intent', {
         method: 'POST',
-        body: JSON.stringify({ listingId: listing.id }),
+        body: JSON.stringify({ listingId: listing.id, addressId: selectedAddressId }),
       })
       setClientSecret(data.clientSecret)
+      setAddressStep(false)
       setCheckoutOpen(true)
     } catch (err) {
       setCheckoutError(err.message || 'Could not start checkout')
@@ -189,11 +215,41 @@ export default function ListingDetail() {
           {paymentSuccess && <p className="listing-detail-payment-success">Payment successful! This item is sold.</p>}
           {canBuy && (
             <div className="listing-detail-buy">
-              <button type="button" className="listing-detail-buy-btn" onClick={handleBuyClick} disabled={checkoutLoading || !stripePromise}>
-                {checkoutLoading ? 'Preparing…' : 'Buy now'}
-              </button>
-              {!stripePromise && <p className="listing-detail-buy-hint">Checkout is not configured (missing VITE_STRIPE_PUBLISHABLE_KEY).</p>}
-              {checkoutError && <p className="listing-detail-error">{checkoutError}</p>}
+              {!addressStep ? (
+                <>
+                  <button type="button" className="listing-detail-buy-btn" onClick={handleBuyClick} disabled={checkoutLoading || !stripePromise}>
+                    {checkoutLoading ? 'Preparing…' : 'Buy now'}
+                  </button>
+                  {!stripePromise && <p className="listing-detail-buy-hint">Checkout is not configured (missing VITE_STRIPE_PUBLISHABLE_KEY).</p>}
+                  {checkoutError && <p className="listing-detail-error">{checkoutError}</p>}
+                  {checkoutError && checkoutError.includes('address') && (
+                    <p className="listing-detail-address-link"><Link to="/account/addresses">Manage addresses</Link></p>
+                  )}
+                </>
+              ) : (
+                <div className="listing-detail-address-step">
+                  <p className="listing-detail-address-step-title">Shipping address</p>
+                  <select
+                    value={selectedAddressId ?? ''}
+                    onChange={(e) => setSelectedAddressId(Number(e.target.value))}
+                    aria-label="Choose shipping address"
+                  >
+                    {addresses.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.line1}, {a.city}{a.state ? `, ${a.state}` : ''} {a.postalCode}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="listing-detail-address-step-actions">
+                    <button type="button" onClick={() => setAddressStep(false)}>Back</button>
+                    <button type="button" className="listing-detail-buy-btn" onClick={handleConfirmAddressAndPay} disabled={checkoutLoading}>
+                      {checkoutLoading ? 'Preparing…' : 'Continue to payment'}
+                    </button>
+                  </div>
+                  <p className="listing-detail-address-link"><Link to="/account/addresses">Add or edit addresses</Link></p>
+                  {checkoutError && <p className="listing-detail-error">{checkoutError}</p>}
+                </div>
+              )}
             </div>
           )}
           {user && listing.status === 'ACTIVE' && !isOwnListing && !listing.sellerPayoutsEnabled && (

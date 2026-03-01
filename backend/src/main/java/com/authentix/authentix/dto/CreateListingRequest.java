@@ -34,4 +34,13 @@ public class CreateListingRequest {
 
     @NotNull
     private ShippingOption shippingOption = ShippingOption.SHIP;
+
+    @Size(max = 20)
+    private String zipCode;
+
+    @Size(max = 100)
+    private String city;
+
+    @Size(max = 100)
+    private String state;
 }

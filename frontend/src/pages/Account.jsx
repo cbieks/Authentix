@@ -254,7 +254,7 @@ export default function Account() {
           )}
         </div>
         <p className="account-links">
-          <Link to="/account/listings">My listings</Link> · <Link to="/account/watchlist">Watchlist</Link> · <Link to="/account/inbox">Inbox</Link> · <Link to="/listings/new">Create listing</Link>
+          <Link to="/account/listings">My listings</Link> · <Link to="/account/watchlist">Watchlist</Link> · <Link to="/account/inbox">Inbox</Link> · <Link to="/account/addresses">Addresses</Link> · <Link to="/listings/new">Create listing</Link>
         </p>
       </div>
 

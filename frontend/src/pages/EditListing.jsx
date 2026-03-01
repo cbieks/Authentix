@@ -24,6 +24,9 @@ export default function EditListing() {
         price: String(data.price),
         condition: data.condition || '',
         shippingOption: data.shippingOption || 'SHIP',
+        zipCode: data.zipCode || '',
+        city: data.city || '',
+        state: data.state || '',
         images: data.images || [],
       }))
       .catch(() => setError('Listing not found'))
@@ -75,6 +78,9 @@ export default function EditListing() {
       price: Number(form.price),
       condition: form.condition || undefined,
       shippingOption: form.shippingOption,
+      zipCode: form.zipCode?.trim() || undefined,
+      city: form.city?.trim() || undefined,
+      state: form.state?.trim() || undefined,
       images: form.images,
     }
     api(`/api/listings/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
@@ -147,6 +153,29 @@ export default function EditListing() {
             <option value="SHIP">Ship</option>
             <option value="LOCAL_PICKUP">Local pickup</option>
           </select>
+        </label>
+        <label>
+          Location (for “Near you” discovery)
+          <div className="listing-form-location">
+            <input
+              value={form.city}
+              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+              placeholder="City"
+              maxLength={100}
+            />
+            <input
+              value={form.state}
+              onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+              placeholder="State"
+              maxLength={100}
+            />
+            <input
+              value={form.zipCode}
+              onChange={(e) => setForm((f) => ({ ...f, zipCode: e.target.value }))}
+              placeholder="ZIP / postal code"
+              maxLength={20}
+            />
+          </div>
         </label>
         <div className="listing-form-photos-section">
           <label>

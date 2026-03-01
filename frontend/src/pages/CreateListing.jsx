@@ -14,6 +14,9 @@ export default function CreateListing() {
     price: '',
     condition: '',
     shippingOption: 'SHIP',
+    zipCode: '',
+    city: '',
+    state: '',
     images: [],
   })
   const [imageUrl, setImageUrl] = useState('')
@@ -71,6 +74,9 @@ export default function CreateListing() {
       price: Number(form.price),
       condition: form.condition || undefined,
       shippingOption: form.shippingOption,
+      zipCode: form.zipCode?.trim() || undefined,
+      city: form.city?.trim() || undefined,
+      state: form.state?.trim() || undefined,
       images: form.images,
     }
     api('/api/listings', { method: 'POST', body: JSON.stringify(payload) })
@@ -142,6 +148,29 @@ export default function CreateListing() {
             <option value="SHIP">Ship</option>
             <option value="LOCAL_PICKUP">Local pickup</option>
           </select>
+        </label>
+        <label>
+          Location (for “Near you” discovery — city/state/ZIP only, not your full address)
+          <div className="listing-form-location">
+            <input
+              value={form.city}
+              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+              placeholder="City"
+              maxLength={100}
+            />
+            <input
+              value={form.state}
+              onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+              placeholder="State"
+              maxLength={100}
+            />
+            <input
+              value={form.zipCode}
+              onChange={(e) => setForm((f) => ({ ...f, zipCode: e.target.value }))}
+              placeholder="ZIP / postal code"
+              maxLength={20}
+            />
+          </div>
         </label>
         <div className="listing-form-photos-section">
           <label>

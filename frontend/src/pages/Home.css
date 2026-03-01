@@ -34,6 +34,109 @@
   color: #94a3b8;
 }
 
+.home-near-you-cta {
+  margin-top: 0.5rem;
+}
+
+.home-zip-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.home-zip-entry input {
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #f8fafc);
+  font-size: 0.95rem;
+  min-width: 140px;
+}
+
+.home-zip-entry input::placeholder {
+  color: var(--text-muted, #64748b);
+}
+
+.home-zip-country {
+  max-width: 4rem;
+}
+
+.home-zip-entry button {
+  padding: 0.4rem 0.75rem;
+  background: #5eead4;
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.home-zip-entry button:hover:not(:disabled) {
+  background: #2dd4bf;
+}
+
+.home-zip-entry button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.home-near-you-cta .home-zip-hint {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.home-zip-link {
+  background: none;
+  border: none;
+  color: #5eead4;
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: none;
+  padding: 0;
+}
+
+.home-zip-link:hover {
+  text-decoration: underline;
+}
+
+.home-discovery-form,
+.home-guest-zip {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.home-discovery-form label,
+.home-guest-zip input {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.home-discovery-form input {
+  margin-left: 0.5rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.home-discovery-actions,
+.home-guest-zip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.home-guest-zip input {
+  flex: 1;
+  min-width: 160px;
+  padding: 0.35rem 0.5rem;
+}
+
+.home-guest-zip .home-zip-hint {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
 .home-footer {
   margin-top: 2rem;
   padding-top: 1.5rem;

@@ -61,6 +61,21 @@ public class ListingService {
         return ListingDto.fromEntity(listing);
     }
 
+    /**
+     * Nearby listings by ZIP (v1: same ZIP only). Returns up to limit ACTIVE listings.
+     */
+    public List<ListingDto> getNearby(String zipCode, int limit) {
+        if (zipCode == null || zipCode.isBlank()) {
+            return List.of();
+        }
+        String zip = zipCode.trim();
+        Pageable pageable = PageRequest.of(0, Math.min(limit, 50), Sort.by(Sort.Direction.DESC, "createdAt"));
+        return listingRepository.findByStatusAndZipCodeOrderByCreatedAtDesc(ListingStatus.ACTIVE, zip, pageable)
+                .getContent().stream()
+                .map(ListingDto::fromEntity)
+                .toList();
+    }
+
     @Transactional
     public ListingDto create(CreateListingRequest request) {
         User seller = getCurrentUser();
@@ -76,6 +91,9 @@ public class ListingService {
                 .images(request.getImages() != null ? request.getImages() : List.of())
                 .status(ListingStatus.DRAFT)
                 .shippingOption(request.getShippingOption() != null ? request.getShippingOption() : ShippingOption.SHIP)
+                .zipCode(request.getZipCode())
+                .city(request.getCity())
+                .state(request.getState())
                 .build();
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
@@ -100,6 +118,9 @@ public class ListingService {
         if (request.getCondition() != null) listing.setCondition(request.getCondition());
         if (request.getImages() != null) listing.setImages(request.getImages());
         if (request.getShippingOption() != null) listing.setShippingOption(request.getShippingOption());
+        if (request.getZipCode() != null) listing.setZipCode(request.getZipCode());
+        if (request.getCity() != null) listing.setCity(request.getCity());
+        if (request.getState() != null) listing.setState(request.getState());
         listing = listingRepository.save(listing);
         return ListingDto.fromEntity(listing);
     }

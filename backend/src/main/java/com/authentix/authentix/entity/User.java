@@ -42,6 +42,15 @@ public class User {
     @Column(name = "stripe_connect_account_id")
     private String stripeConnectAccountId;
 
+    @Column(name = "discovery_zip_code", length = 20)
+    private String discoveryZipCode;
+
+    @Column(name = "discovery_country", length = 2)
+    private String discoveryCountry;
+
+    @Column(name = "discovery_updated_at")
+    private Instant discoveryUpdatedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

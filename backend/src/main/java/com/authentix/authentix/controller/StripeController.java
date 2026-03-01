@@ -39,17 +39,23 @@ public class StripeController {
 
     @PostMapping("/orders/create-payment-intent")
     public ResponseEntity<?> createPaymentIntent(@AuthenticationPrincipal AuthenticatedUser auth,
-                                                 @RequestBody Map<String, Long> body) {
-        Long listingId = body != null ? body.get("listingId") : null;
+                                                 @RequestBody Map<String, Object> body) {
+        Long listingId = body != null && body.get("listingId") != null
+                ? ((Number) body.get("listingId")).longValue() : null;
+        Long addressId = body != null && body.get("addressId") != null
+                ? ((Number) body.get("addressId")).longValue() : null;
         if (listingId == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "listingId required"));
+        }
+        if (addressId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "addressId required"));
         }
         if (!stripeService.isStripeConfigured()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(Map.of("error", "Stripe is not configured"));
         }
         try {
-            var result = stripeService.createPaymentIntentForPurchase(listingId, auth.getUserId());
+            var result = stripeService.createPaymentIntentForPurchase(listingId, auth.getUserId(), addressId);
             return ResponseEntity.ok(Map.of(
                     "clientSecret", result.clientSecret(),
                     "orderId", result.orderId()

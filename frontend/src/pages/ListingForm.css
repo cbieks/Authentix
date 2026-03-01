@@ -24,6 +24,18 @@
   border-radius: 8px;
 }
 
+.listing-form-location {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.listing-form-location input {
+  flex: 1;
+  min-width: 80px;
+}
+
 .listing-form-photos-section {
   margin-bottom: 1rem;
 }

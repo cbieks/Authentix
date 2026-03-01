@@ -1,5 +1,6 @@
 package com.authentix.authentix.service;
 
+import com.authentix.authentix.entity.Address;
 import com.authentix.authentix.entity.Listing;
 import com.authentix.authentix.entity.ListingStatus;
 import com.authentix.authentix.entity.Order;
@@ -32,6 +33,7 @@ public class StripeService {
     private final UserRepository userRepository;
     private final ListingRepository listingRepository;
     private final OrderRepository orderRepository;
+    private final AddressService addressService;
 
     @Value("${stripe.secret-key:}")
     private String secretKey;
@@ -79,10 +81,10 @@ public class StripeService {
 
     /**
      * Creates a PaymentIntent for buying a listing (destination charge with 6% platform fee)
-     * and an Order in PENDING status. Returns client secret for frontend confirmation.
+     * and an Order in PENDING status with shipping address snapshot. Returns client secret for frontend confirmation.
      */
     @Transactional
-    public CreatePaymentResult createPaymentIntentForPurchase(Long listingId, Long buyerId) throws StripeException {
+    public CreatePaymentResult createPaymentIntentForPurchase(Long listingId, Long buyerId, Long addressId) throws StripeException {
         Listing listing = listingRepository.findById(listingId)
                 .orElseThrow(() -> new IllegalArgumentException("Listing not found"));
         if (listing.getStatus() != ListingStatus.ACTIVE) {
@@ -99,6 +101,8 @@ public class StripeService {
         if (buyer.getId().equals(seller.getId())) {
             throw new IllegalArgumentException("Cannot buy your own listing");
         }
+
+        Address address = addressService.getAddressForUser(addressId, buyerId);
 
         BigDecimal amount = listing.getPrice();
         long amountCents = amount.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValue();
@@ -136,6 +140,13 @@ public class StripeService {
                 .platformFee(feeAmount)
                 .sellerPayout(payoutAmount)
                 .status(OrderStatus.PENDING)
+                .shipLine1(address.getLine1())
+                .shipLine2(address.getLine2())
+                .shipCity(address.getCity())
+                .shipState(address.getState())
+                .shipPostalCode(address.getPostalCode())
+                .shipCountry(address.getCountry())
+                .shipPhone(address.getPhone())
                 .build();
         orderRepository.save(order);
 

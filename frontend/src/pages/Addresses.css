@@ -1,0 +1,129 @@
+.addresses-page {
+  max-width: 560px;
+}
+
+.addresses-intro {
+  color: var(--text-muted, #666);
+  margin-bottom: 0.5rem;
+}
+
+.addresses-links {
+  margin-bottom: 1rem;
+}
+
+.addresses-message {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.addresses-message.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.addresses-message.error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.addresses-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+
+.addresses-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.addresses-item.default {
+  border-color: var(--primary, #1976d2);
+  background: rgba(25, 118, 210, 0.04);
+}
+
+.addresses-item-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.addresses-badge {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--primary, #1976d2);
+  font-weight: 600;
+}
+
+.addresses-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.addresses-item-actions button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.addresses-delete {
+  color: #c62828;
+}
+
+.addresses-empty {
+  color: var(--text-muted, #666);
+  margin-bottom: 1rem;
+}
+
+.addresses-form {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.addresses-form h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.addresses-form label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.addresses-form label input {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+}
+
+.addresses-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.addresses-form .checkbox-label input {
+  width: auto;
+  display: inline-block;
+  margin: 0;
+}
+
+.addresses-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.addresses-add-btn {
+  padding: 0.5rem 1rem;
+}

@@ -21,6 +21,9 @@ public class ListingDto {
     private List<String> images;
     private ListingStatus status;
     private ShippingOption shippingOption;
+    private String zipCode;
+    private String city;
+    private String state;
     private Long sellerId;
     private String sellerDisplayName;
     private String sellerProfilePhotoUrl;
@@ -39,6 +42,9 @@ public class ListingDto {
         dto.setImages(listing.getImages() != null ? List.copyOf(listing.getImages()) : List.of());
         dto.setStatus(listing.getStatus());
         dto.setShippingOption(listing.getShippingOption());
+        dto.setZipCode(listing.getZipCode());
+        dto.setCity(listing.getCity());
+        dto.setState(listing.getState());
         dto.setSellerId(listing.getSeller().getId());
         dto.setSellerDisplayName(listing.getSeller().getDisplayName());
         dto.setSellerProfilePhotoUrl(listing.getSeller().getProfilePhotoUrl());

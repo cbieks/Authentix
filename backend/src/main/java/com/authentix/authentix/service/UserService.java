@@ -1,9 +1,12 @@
 package com.authentix.authentix.service;
 
+import com.authentix.authentix.dto.DiscoveryLocationDto;
 import com.authentix.authentix.dto.UpdateProfileRequest;
 import com.authentix.authentix.dto.UserDto;
 import com.authentix.authentix.entity.User;
 import com.authentix.authentix.repository.UserRepository;
+
+import java.time.Instant;
 import com.authentix.authentix.security.AuthenticatedUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,5 +45,28 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return UserDto.fromEntity(user, user.isContactVisible());
+    }
+
+    public DiscoveryLocationDto getDiscoveryLocation() {
+        User user = getCurrentUser();
+        DiscoveryLocationDto dto = new DiscoveryLocationDto();
+        dto.setZipCode(user.getDiscoveryZipCode());
+        dto.setCountry(user.getDiscoveryCountry());
+        dto.setUpdatedAt(user.getDiscoveryUpdatedAt());
+        return dto;
+    }
+
+    @Transactional
+    public DiscoveryLocationDto updateDiscoveryLocation(String zipCode, String country) {
+        User user = getCurrentUser();
+        user.setDiscoveryZipCode(zipCode != null && !zipCode.isBlank() ? zipCode.trim() : null);
+        user.setDiscoveryCountry(country != null && country.length() == 2 ? country.toUpperCase() : null);
+        user.setDiscoveryUpdatedAt(Instant.now());
+        user = userRepository.save(user);
+        DiscoveryLocationDto dto = new DiscoveryLocationDto();
+        dto.setZipCode(user.getDiscoveryZipCode());
+        dto.setCountry(user.getDiscoveryCountry());
+        dto.setUpdatedAt(user.getDiscoveryUpdatedAt());
+        return dto;
     }
 }

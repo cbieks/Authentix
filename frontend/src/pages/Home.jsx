@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useDiscoveryZip } from '../context/DiscoveryZipContext'
 import { api } from '../api/client'
 import CategoryScroller from '../components/CategoryScroller'
 import ProductCarousel from '../components/ProductCarousel'
@@ -9,8 +10,12 @@ import './Home.css'
 const MAX_CAROUSEL = 10
 
 export default function Home() {
-  const { user } = useAuth()
+  const { user, refetchUser } = useAuth()
+  const { guestZip, setGuestZip } = useDiscoveryZip()
   const [categories, setCategories] = useState([])
+  const [zipInput, setZipInput] = useState('')
+  const [zipCountry, setZipCountry] = useState('US')
+  const [zipSaving, setZipSaving] = useState(false)
   const [categoriesLoading, setCategoriesLoading] = useState(true)
   const [recommended, setRecommended] = useState([])
   const [recommendedLoading, setRecommendedLoading] = useState(true)
@@ -19,7 +24,36 @@ export default function Home() {
   const [lowestPrice, setLowestPrice] = useState([])
   const [lowestPriceLoading, setLowestPriceLoading] = useState(true)
 
-  const userZip = user?.zipCode ?? null
+  const zipForNearYou = user
+    ? (user.discoveryZipCode?.trim() || null)
+    : (guestZip?.trim() || null)
+
+  useEffect(() => {
+    if (!zipForNearYou?.trim()) {
+      setZipInput('')
+    }
+  }, [zipForNearYou])
+
+  async function handleZipSave() {
+    const zip = zipInput?.trim() || ''
+    if (!zip) return
+    setZipSaving(true)
+    try {
+      if (user) {
+        await api('/api/users/me/discovery-location', {
+          method: 'PUT',
+          body: JSON.stringify({
+            zipCode: zip,
+            country: (zipCountry || 'US').toUpperCase().slice(0, 2),
+          }),
+        })
+        await refetchUser()
+      } else {
+        setGuestZip(zip)
+      }
+    } catch (_) {}
+    setZipSaving(false)
+  }
 
   useEffect(() => {
     api('/api/categories')
@@ -37,24 +71,15 @@ export default function Home() {
 
   useEffect(() => {
     setNearYouLoading(true)
-    if (userZip) {
-      api(`/api/listings?page=0&size=${MAX_CAROUSEL}`)
-        .then((res) => {
-          const list = res?.content ?? []
-          setNearYou(list.slice(0, MAX_CAROUSEL))
-        })
-        .catch(() => setNearYou([]))
-        .finally(() => setNearYouLoading(false))
-    } else {
-      api(`/api/listings?page=0&size=${MAX_CAROUSEL}`)
-        .then((res) => {
-          const list = res?.content ?? []
-          setNearYou(list.slice(0, MAX_CAROUSEL))
-        })
-        .catch(() => setNearYou([]))
-        .finally(() => setNearYouLoading(false))
-    }
-  }, [userZip])
+    const zip = zipForNearYou?.trim() || null
+    const url = zip
+      ? `/api/listings/nearby?zip=${encodeURIComponent(zip)}&limit=${MAX_CAROUSEL}`
+      : `/api/listings/nearby?limit=${MAX_CAROUSEL}`
+    api(url)
+      .then((data) => setNearYou(Array.isArray(data) ? data.slice(0, MAX_CAROUSEL) : []))
+      .catch(() => setNearYou([]))
+      .finally(() => setNearYouLoading(false))
+  }, [zipForNearYou])
 
   useEffect(() => {
     setLowestPriceLoading(true)
@@ -92,13 +117,24 @@ export default function Home() {
           title="Near you"
           products={nearYou}
           loading={nearYouLoading}
-          emptyMessage="No listings nearby. Add your zip in Account to see local results."
+          emptyMessage={zipForNearYou ? 'No listings in this area yet.' : 'Enter your ZIP below to see listings near you.'}
         />
-        {!userZip && user && (
-          <p className="home-zip-prompt"><Link to="/account">Add zip code to personalize</Link></p>
-        )}
-        {!userZip && !user && (
-          <p className="home-zip-hint">Sign in to add your zip for local listings.</p>
+        {!zipForNearYou && (
+          <div className="home-near-you-cta"><div className="home-zip-entry"><input
+                type="text"
+                value={zipInput}
+                onChange={(e) => setZipInput(e.target.value)}
+                placeholder="Enter ZIP / postal code"
+                maxLength={20}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleZipSave())}
+              />{user && (<input
+                type="text"
+                value={zipCountry}
+                onChange={(e) => setZipCountry(e.target.value)}
+                placeholder="US"
+                maxLength={2}
+                className="home-zip-country"
+              />)}<button type="button" onClick={handleZipSave} disabled={zipSaving || !zipInput.trim()}>{zipSaving ? 'Saving…' : 'See listings near you'}</button></div>{!user && <p className="home-zip-hint">Sign in to save your ZIP for future visits.</p>}</div>
         )}
       </section>
 

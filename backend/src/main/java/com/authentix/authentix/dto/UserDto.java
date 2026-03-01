@@ -3,6 +3,8 @@ package com.authentix.authentix.dto;
 import com.authentix.authentix.entity.User;
 import lombok.Data;
 
+import java.time.Instant;
+
 @Data
 public class UserDto {
     private Long id;
@@ -13,6 +15,9 @@ public class UserDto {
     private String contactInfo;
     private boolean contactVisible;
     private boolean payoutsEnabled;
+    private String discoveryZipCode;
+    private String discoveryCountry;
+    private Instant discoveryUpdatedAt;
 
     public static UserDto fromEntity(User user) {
         return fromEntity(user, true);
@@ -30,6 +35,9 @@ public class UserDto {
             dto.setContactInfo(user.getContactInfo());
         }
         dto.setPayoutsEnabled(user.getStripeConnectAccountId() != null && !user.getStripeConnectAccountId().isBlank());
+        dto.setDiscoveryZipCode(user.getDiscoveryZipCode());
+        dto.setDiscoveryCountry(user.getDiscoveryCountry());
+        dto.setDiscoveryUpdatedAt(user.getDiscoveryUpdatedAt());
         return dto;
     }
 }

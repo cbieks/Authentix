@@ -21,4 +21,10 @@ public class UpdateListingRequest {
     private String condition;
     private List<String> images;
     private ShippingOption shippingOption;
+    @Size(max = 20)
+    private String zipCode;
+    @Size(max = 100)
+    private String city;
+    @Size(max = 100)
+    private String state;
 }

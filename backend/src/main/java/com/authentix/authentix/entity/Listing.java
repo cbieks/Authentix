@@ -61,6 +61,15 @@ public class Listing {
     @Column(name = "shipping_option", nullable = false)
     private ShippingOption shippingOption = ShippingOption.SHIP;
 
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Column(name = "city", length = 100)
+    private String city;
+
+    @Column(name = "state", length = 100)
+    private String state;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

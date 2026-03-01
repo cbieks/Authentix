@@ -1,17 +1,22 @@
 package com.authentix.authentix.controller;
 
 import com.authentix.authentix.dto.CreateListingRequest;
+import com.authentix.authentix.dto.DiscoveryLocationDto;
 import com.authentix.authentix.dto.ListingDto;
 import com.authentix.authentix.dto.UpdateListingRequest;
 import com.authentix.authentix.entity.ListingStatus;
 import com.authentix.authentix.entity.ShippingOption;
+import com.authentix.authentix.security.AuthenticatedUser;
 import com.authentix.authentix.service.ListingService;
 import com.authentix.authentix.service.RecommendationService;
+import com.authentix.authentix.service.UserService;
 import com.authentix.authentix.service.WatchlistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +30,7 @@ public class ListingController {
     private final ListingService listingService;
     private final WatchlistService watchlistService;
     private final RecommendationService recommendationService;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<Page<ListingDto>> list(
@@ -38,6 +44,23 @@ public class ListingController {
     @GetMapping("/recommended")
     public ResponseEntity<List<ListingDto>> recommended(@RequestParam(required = false) Long listingId) {
         return ResponseEntity.ok(recommendationService.getRecommended(listingId));
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<ListingDto>> nearby(
+            @RequestParam(required = false) String zip,
+            @RequestParam(defaultValue = "10") int limit) {
+        String zipToUse = zip;
+        if (zipToUse == null || zipToUse.isBlank()) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof AuthenticatedUser) {
+                DiscoveryLocationDto loc = userService.getDiscoveryLocation();
+                if (loc != null && loc.getZipCode() != null && !loc.getZipCode().isBlank()) {
+                    zipToUse = loc.getZipCode();
+                }
+            }
+        }
+        return ResponseEntity.ok(listingService.getNearby(zipToUse, limit));
     }
 
     @GetMapping("/{id}")

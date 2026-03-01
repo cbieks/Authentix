@@ -318,3 +318,11 @@
 .listing-detail-similar-card img { aspect-ratio: 1; object-fit: cover; }
 .listing-detail-similar-price { font-weight: 700; color: #059669; font-size: 0.9rem; padding: 0.25rem 0.5rem; }
 .listing-detail-similar-title { font-size: 0.85rem; padding: 0 0.5rem 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.listing-detail-address-step { margin-top: 0.5rem; }
+.listing-detail-address-step-title { margin: 0 0 0.5rem; font-size: 0.95rem; }
+.listing-detail-address-step select { width: 100%; max-width: 360px; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 8px; border: 1px solid #d1d5db; }
+.listing-detail-address-step-actions { display: flex; gap: 0.5rem; align-items: center; margin: 0.5rem 0; }
+.listing-detail-address-link { margin-top: 0.5rem; font-size: 0.9rem; }
+.listing-detail-address-link a { color: #2563eb; text-decoration: none; }
+.listing-detail-address-link a:hover { text-decoration: underline; }

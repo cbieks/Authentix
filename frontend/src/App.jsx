@@ -16,6 +16,7 @@ import EditListing from './pages/EditListing'
 import MyListings from './pages/MyListings'
 import MyWatchlist from './pages/MyWatchlist'
 import Inbox from './pages/Inbox'
+import Addresses from './pages/Addresses'
 
 export default function App() {
   useEffect(() => { loadAnalytics() }, [])
@@ -57,6 +58,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Inbox />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account/addresses"
+          element={
+            <ProtectedRoute>
+              <Addresses />
             </ProtectedRoute>
           }
         />
