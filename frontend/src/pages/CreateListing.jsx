@@ -6,7 +6,9 @@ import './ListingForm.css'
 
 export default function CreateListing() {
   const navigate = useNavigate()
-  const [categories, setCategories] = useState([])
+  const [rootCategories, setRootCategories] = useState([])
+  const [subcategories, setSubcategories] = useState([])
+  const [parentCategoryId, setParentCategoryId] = useState('')
   const [form, setForm] = useState({
     categoryId: '',
     title: '',
@@ -25,8 +27,26 @@ export default function CreateListing() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api('/api/categories').then(setCategories).catch(() => {})
+    api('/api/categories').then(setRootCategories).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!parentCategoryId) {
+      setSubcategories([])
+      setForm((f) => ({ ...f, categoryId: '' }))
+      return
+    }
+    api(`/api/categories?parentId=${parentCategoryId}`)
+      .then((list) => {
+        setSubcategories(list || [])
+        if ((list || []).length === 0) {
+          setForm((f) => ({ ...f, categoryId: parentCategoryId }))
+        } else {
+          setForm((f) => ({ ...f, categoryId: '' }))
+        }
+      })
+      .catch(() => setSubcategories([]))
+  }, [parentCategoryId])
 
   async function handleImageFiles(e) {
     const files = e.target.files ? [...e.target.files] : []
@@ -92,16 +112,35 @@ export default function CreateListing() {
         {error && <p className="listing-form-error">{error}</p>}
         <label>
           Category *
-          <select
-            value={form.categoryId}
-            onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-            required
-          >
-            <option value="">Select category</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="listing-form-category-row">
+            <select
+              value={parentCategoryId}
+              onChange={(e) => setParentCategoryId(e.target.value)}
+              required
+              aria-label="Parent category"
+            >
+              <option value="">Select category</option>
+              {rootCategories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {subcategories.length > 0 && (
+              <select
+                value={form.categoryId}
+                onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                required
+                aria-label="Subcategory"
+              >
+                <option value="">Select subcategory</option>
+                {subcategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          {parentCategoryId && subcategories.length === 0 && (
+            <span className="listing-form-category-hint">Using this category (no subcategories).</span>
+          )}
         </label>
         <label>
           Title *

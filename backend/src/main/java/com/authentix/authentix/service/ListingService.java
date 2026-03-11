@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -40,16 +41,28 @@ public class ListingService {
     public Page<ListingDto> getActiveListings(Long categoryId, ShippingOption shippingOption, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Listing> listings;
-        if (categoryId != null && shippingOption != null) {
-            listings = listingRepository.findByStatusAndCategoryIdAndShippingOptionOrderByCreatedAtDesc(ListingStatus.ACTIVE, categoryId, shippingOption, pageable);
-        } else if (categoryId != null) {
-            listings = listingRepository.findByStatusAndCategoryIdOrderByCreatedAtDesc(ListingStatus.ACTIVE, categoryId, pageable);
+        if (categoryId != null) {
+            List<Long> categoryIds = resolveCategoryIdsForFilter(categoryId);
+            if (shippingOption != null) {
+                listings = listingRepository.findByStatusAndCategoryIdInAndShippingOptionOrderByCreatedAtDesc(ListingStatus.ACTIVE, categoryIds, shippingOption, pageable);
+            } else {
+                listings = listingRepository.findByStatusAndCategoryIdInOrderByCreatedAtDesc(ListingStatus.ACTIVE, categoryIds, pageable);
+            }
         } else if (shippingOption != null) {
             listings = listingRepository.findByStatusAndShippingOptionOrderByCreatedAtDesc(ListingStatus.ACTIVE, shippingOption, pageable);
         } else {
             listings = listingRepository.findByStatusOrderByCreatedAtDesc(ListingStatus.ACTIVE, pageable);
         }
         return listings.map(ListingDto::fromEntity);
+    }
+
+    /** Resolve category id to list containing this category and all its subcategory ids (for filtering by parent). */
+    private List<Long> resolveCategoryIdsForFilter(Long categoryId) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(categoryId);
+        List<Category> children = categoryRepository.findByParentIdOrderByName(categoryId);
+        children.stream().map(Category::getId).forEach(ids::add);
+        return ids;
     }
 
     public ListingDto getById(Long id) {

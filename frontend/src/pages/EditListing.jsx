@@ -7,7 +7,9 @@ import './ListingForm.css'
 export default function EditListing() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [categories, setCategories] = useState([])
+  const [rootCategories, setRootCategories] = useState([])
+  const [subcategories, setSubcategories] = useState([])
+  const [parentCategoryId, setParentCategoryId] = useState('')
   const [form, setForm] = useState(null)
   const [imageUrl, setImageUrl] = useState('')
   const [imageUploading, setImageUploading] = useState(false)
@@ -15,20 +17,35 @@ export default function EditListing() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api('/api/categories').then(setCategories).catch(() => {})
+    api('/api/categories').then(setRootCategories).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     api(`/api/listings/${id}`)
-      .then((data) => setForm({
-        categoryId: String(data.categoryId),
-        title: data.title,
-        description: data.description || '',
-        price: String(data.price),
-        condition: data.condition || '',
-        shippingOption: data.shippingOption || 'SHIP',
-        zipCode: data.zipCode || '',
-        city: data.city || '',
-        state: data.state || '',
-        images: data.images || [],
-      }))
+      .then(async (data) => {
+        const categoryId = data.categoryId
+        const categoryRes = await api(`/api/categories/${categoryId}`).catch(() => null)
+        const parentId = categoryRes?.parentId ?? null
+        const parentIdStr = parentId != null ? String(parentId) : ''
+        setParentCategoryId(parentIdStr || String(categoryId))
+        setForm({
+          categoryId: String(categoryId),
+          title: data.title,
+          description: data.description || '',
+          price: String(data.price),
+          condition: data.condition || '',
+          shippingOption: data.shippingOption || 'SHIP',
+          zipCode: data.zipCode || '',
+          city: data.city || '',
+          state: data.state || '',
+          images: data.images || [],
+        })
+        if (parentId != null) {
+          api(`/api/categories?parentId=${parentId}`).then((list) => setSubcategories(list || [])).catch(() => setSubcategories([]))
+        } else {
+          setSubcategories([])
+        }
+      })
       .catch(() => setError('Listing not found'))
   }, [id])
 
@@ -99,15 +116,53 @@ export default function EditListing() {
         {error && <p className="listing-form-error">{error}</p>}
         <label>
           Category *
-          <select
-            value={form.categoryId}
-            onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-            required
-          >
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
+          <div className="listing-form-category-row">
+            <select
+              value={parentCategoryId}
+              onChange={(e) => {
+                const nextParentId = e.target.value
+                setParentCategoryId(nextParentId)
+                if (!nextParentId) {
+                  setSubcategories([])
+                  setForm((f) => ({ ...f, categoryId: '' }))
+                  return
+                }
+                api(`/api/categories?parentId=${nextParentId}`)
+                  .then((list) => {
+                    setSubcategories(list || [])
+                    if ((list || []).length === 0) {
+                      setForm((f) => ({ ...f, categoryId: nextParentId }))
+                    } else {
+                      setForm((f) => ({ ...f, categoryId: '' }))
+                    }
+                  })
+                  .catch(() => { setSubcategories([]); setForm((f) => ({ ...f, categoryId: nextParentId })) })
+              }}
+              required
+              aria-label="Parent category"
+            >
+              <option value="">Select category</option>
+              {rootCategories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {subcategories.length > 0 && (
+              <select
+                value={form.categoryId}
+                onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
+                required
+                aria-label="Subcategory"
+              >
+                <option value="">Select subcategory</option>
+                {subcategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          {parentCategoryId && subcategories.length === 0 && (
+            <span className="listing-form-category-hint">Using this category (no subcategories).</span>
+          )}
         </label>
         <label>
           Title *

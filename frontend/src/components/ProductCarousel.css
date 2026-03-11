@@ -4,11 +4,7 @@
 }
 
 .product-carousel-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   margin-bottom: 0.75rem;
-  padding-right: 4rem;
 }
 
 .product-carousel-title {
@@ -18,11 +14,15 @@
   color: #f8fafc;
 }
 
+.product-carousel-arrows {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .product-carousel-arrow {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
@@ -41,14 +41,6 @@
 .product-carousel-arrow:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #f8fafc;
-}
-
-.product-carousel-arrow.left {
-  right: 2.75rem;
-}
-
-.product-carousel-arrow.right {
-  right: 0;
 }
 
 .product-carousel-inner {

@@ -32,26 +32,6 @@ export default function ProductCarousel({ title, products = [], loading, emptyMe
     <section className="product-carousel">
       <div className="product-carousel-header">
         <h2 className="product-carousel-title">{title}</h2>
-        {list.length > 0 && (
-          <>
-            <button
-              type="button"
-              className="product-carousel-arrow left"
-              onClick={() => scroll('left')}
-              aria-label="Scroll left"
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              className="product-carousel-arrow right"
-              onClick={() => scroll('right')}
-              aria-label="Scroll right"
-            >
-              ›
-            </button>
-          </>
-        )}
       </div>
 
       {loading ? (
@@ -77,6 +57,27 @@ export default function ProductCarousel({ title, products = [], loading, emptyMe
               <p className="product-card-price">{getCurrentPrice(item)}</p>
             </Link>
           ))}
+        </div>
+      )}
+
+      {list.length > 0 && !loading && (
+        <div className="product-carousel-arrows">
+          <button
+            type="button"
+            className="product-carousel-arrow left"
+            onClick={() => scroll('left')}
+            aria-label="Scroll left"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            className="product-carousel-arrow right"
+            onClick={() => scroll('right')}
+            aria-label="Scroll right"
+          >
+            ›
+          </button>
         </div>
       )}
     </section>

@@ -24,6 +24,26 @@
   border-radius: 8px;
 }
 
+.listing-form-category-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.listing-form-category-row select {
+  flex: 1;
+  min-width: 140px;
+  margin-top: 0;
+}
+
+.listing-form-category-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
 .listing-form-location {
   display: flex;
   gap: 0.5rem;

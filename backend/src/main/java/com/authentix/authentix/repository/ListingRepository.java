@@ -17,6 +17,7 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
     List<Listing> findBySellerIdOrderByCreatedAtDesc(Long sellerId);
     Page<Listing> findByStatusAndCategoryIdAndIdNotOrderByCreatedAtDesc(ListingStatus status, Long categoryId, Long excludeId, Pageable pageable);
     Page<Listing> findByStatusAndCategoryIdInOrderByCreatedAtDesc(ListingStatus status, List<Long> categoryIds, Pageable pageable);
+    Page<Listing> findByStatusAndCategoryIdInAndShippingOptionOrderByCreatedAtDesc(ListingStatus status, List<Long> categoryIds, ShippingOption shippingOption, Pageable pageable);
 
     Page<Listing> findByStatusAndZipCodeOrderByCreatedAtDesc(ListingStatus status, String zipCode, Pageable pageable);
 }
