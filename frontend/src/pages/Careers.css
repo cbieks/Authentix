@@ -1,0 +1,98 @@
+/* careers.css - playful + professional */
+
+.careers-root {
+  min-height: 100vh;
+  padding: 48px 20px;
+  display: flex;
+  justify-content: center;
+  /* background: linear-gradient(180deg,#0f1530 0%, #151a40 100%); */
+  color: #eef2ff;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  box-sizing: border-box;
+}
+
+.careers-card {
+  width: 100%;
+  max-width: 920px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(3,6,23,0.6);
+  border: 1px solid rgba(255,255,255,0.03);
+  box-sizing: border-box;
+}
+
+.careers-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #fff;
+}
+.subtitle {
+  margin: 8px 0 18px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.45;
+}
+
+/* openings */
+.openings h2 { color: #fff; margin-top: 6px; }
+.role {
+  background: rgba(255,255,255,0.02);
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 14px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.role h3 { margin: 0 0 8px; font-size: 18px; color: #fff; }
+.summary { margin: 0 0 8px; color: rgba(255,255,255,0.85); }
+.requirements { margin: 8px 0 0 20px; color: rgba(255,255,255,0.9); }
+.requirements li { margin: 6px 0; }
+
+/* perks */
+.perks { margin-top: 10px; color: rgba(255,255,255,0.9); }
+
+/* Real talk */
+.fun-legal { margin-top: 18px; padding: 14px; border-radius: 10px; background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.9); }
+
+/* apply form */
+.apply { margin-top: 18px; }
+.apply-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+.apply-form input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.96);
+  color: #0b1220;
+  font-size: 14px;
+}
+
+/* apply button */
+.apply-actions { display: flex; justify-content: flex-start; margin-top: 6px; }
+.apply-btn {
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: linear-gradient(90deg,#7c3aed,#5b46f0);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(92,64,255,0.2);
+}
+
+/* apply status */
+.apply-status .ok { color: #a7f3d0; font-weight: 700; margin-top: 12px; }
+.apply-status .bad { color: #ffb4b4; font-weight: 700; margin-top: 12px; }
+.apply-status .pending { color: #ffd98a; font-weight: 700; margin-top: 12px; }
+
+/* footer */
+.careers-footer { margin-top: 18px; color: rgba(255,255,255,0.75); font-size: 13px; }
+
+/* responsive */
+@media (max-width: 760px) {
+  .careers-root { padding: 28px 12px; }
+  .careers-card { padding: 18px; }
+}

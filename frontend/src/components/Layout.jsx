@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useDiscoveryZip } from '../context/DiscoveryZipContext'
 import { api } from '../api/client'
+import Footer from './Footer'
 import './Layout.css'
 
 export default function Layout({ children }) {
@@ -194,7 +195,12 @@ export default function Layout({ children }) {
           </nav>
         </div>
       </header>
-      <main className="layout-main">{children}</main>
+      <main className='main-main'>
+        <div className="layout-main">
+          {children}
+        </div>
+        <Footer />
+      </main>
     </div>
   )
 }

@@ -17,6 +17,12 @@ import MyListings from './pages/MyListings'
 import MyWatchlist from './pages/MyWatchlist'
 import Inbox from './pages/Inbox'
 import Addresses from './pages/Addresses'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import Help from './pages/Help'
+import Privacy from './pages/Privacy'
+import Careers from './pages/Careers'
+
 
 export default function App() {
   useEffect(() => { loadAnalytics() }, [])
@@ -29,6 +35,11 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/users/:id" element={<PublicProfile />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/careers" element={<Careers />} />
         <Route
           path="/account"
           element={
