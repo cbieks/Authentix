@@ -1,0 +1,74 @@
+/* Simple, professional styling for privacy page */
+
+.privacy-root {
+  /* background: linear-gradient(180deg, #f4f6fb, #ffffff); */
+  min-height: 100vh;
+  padding: 48px 20px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #111827;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+.privacy-container {
+  width: 100%;
+  max-width: 920px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 36px;
+  box-shadow: 0 14px 40px rgba(16, 24, 40, 0.08);
+  box-sizing: border-box;
+}
+
+.privacy-header {
+  margin-bottom: 20px;
+}
+.privacy-header h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  color: #0f1724;
+}
+.privacy-header .lead {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* content */
+.privacy-content section {
+  margin: 18px 0;
+}
+.privacy-content h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #0b1220;
+}
+.privacy-content p {
+  margin: 0 0 8px;
+  color: #374151;
+  line-height: 1.6;
+}
+.privacy-content ul {
+  margin: 8px 0 0 20px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+/* links */
+.privacy-content a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+.privacy-content a:hover {
+  text-decoration: underline;
+}
+
+/* responsive */
+@media (max-width: 760px) {
+  .privacy-container {
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .privacy-header h1 { font-size: 22px; }
+}

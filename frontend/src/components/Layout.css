@@ -31,6 +31,12 @@
   backdrop-filter: blur(8px);
 }
 
+.main-main {
+  flex: 1 1 auto;
+  /* optional: ensure no extra bottom margin collapses */
+  min-height: 0;
+}
+
 .layout-header-inner {
   max-width: 1400px;
   margin: 0 auto;
@@ -267,10 +273,11 @@
 }
 
 .layout-main {
-  flex: 1;
+  flex: 1 1 auto;
   padding: 1rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-height: 0;
   width: 100%;
 }
 

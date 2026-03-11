@@ -1,0 +1,387 @@
+/* src/pages/About.css
+   Professional + centered hero, stronger capabilities layout,
+   and visible leadership glow bar on hover.
+*/
+
+:root{
+  /* --bg-900: #0e1020;
+  --bg-800: #14162a; */
+  --text: #e6eefc;
+  --muted: #9aa3b3;
+  --accent: #6b7dff;
+  --accent-2: #4dd0c8;
+  --radius: 12px;
+  --max-w: 1100px;
+  --container-pad: 24px;
+  --glass-border: rgba(255,255,255,0.03);
+}
+
+/* -------------------------
+   Page base
+   ------------------------- */
+.about-page {
+  background: linear-gradient(180deg, var(--bg-900), var(--bg-800));
+  color: var(--text);
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+/* -------------------------
+   HERO (centered, tighter)
+   ------------------------- */
+.about-hero {
+  padding: 56px 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center; /* center title & paragraph */
+}
+
+.about-hero .container {
+  /* keep the content constrained but centered */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+/* Authentix title spacing and scale */
+.hero-title {
+  font-size: 44px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* hero sub text */
+.hero-sub {
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 64ch;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* KPIs / meta - centered row */
+.hero-meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.kpi {
+  padding: 6px 8px;
+  text-align: center;
+  min-width: 110px;
+}
+.kpi-number {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+.kpi-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* -------------------------
+   Content spacing
+   ------------------------- */
+.about-content {
+  padding: 32px 0 96px;
+}
+
+section {
+  margin-bottom: 36px;
+}
+
+/* -------------------------
+   Lead / mission
+   ------------------------- */
+.lead-card {
+  padding: 0;
+  margin-bottom: 18px;
+}
+
+.lead-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+}
+.lead-paragraph {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+.credibility-list { color: var(--muted); padding-left: 18px; margin: 10px 0 0 0; }
+ 
+/* ================================
+   Capabilities — simplified, uniform boxes, larger icons
+   Replace previous capabilities styles with this block
+   ================================ */
+
+.capabilities {
+  margin-top: 10px;
+}
+
+.capabilities > h2 {
+  margin: 22px 0 14px;
+  font-size: 20px;
+}
+
+/* Grid: three columns -> two -> one; ensure rows stretch to same height */
+.capabilities-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  align-items: stretch;     /* important: stretch children to equal height */
+  grid-auto-rows: 1fr;      /* each row's height grows to match tallest in the row */
+}
+
+/* Card: full-height, no float/scale, no glow bar */
+.cap-card {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding: 22px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.006), rgba(255,255,255,0.002));
+  border: 1px solid rgba(255,255,255,0.03);
+  transition: border-color .18s ease, background .18s ease;
+  min-height: 140px;        /* ensures good visual height on desktop */
+  height: 100%;             /* stretch to grid row height */
+  box-shadow: none;         /* remove previous shadow/glow */
+  transform: none;          /* remove float/hover transforms */
+}
+
+/* Subtle hover only changes border color (no motion) */
+.cap-card:hover {
+  border-color: rgba(107,125,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.003));
+}
+
+/* Remove any left accent pseudo-element if present */
+.cap-card::before,
+.cap-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Bigger, stronger icon */
+.cap-icon {
+  flex: 0 0 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(107,125,255,0.16), rgba(77,208,200,0.06));
+  color: #07121a;
+  box-shadow: 0 6px 16px rgba(10,12,20,0.14);
+}
+
+/* SVGs scale to fill the icon area */
+.cap-icon svg { width: 32px; height: 32px; display:block; }
+
+/* Body text stacks nicely and uses full height */
+.cap-body {
+  flex: 1 1 auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cap-body h3 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: var(--text);
+}
+.cap-body p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+/* Responsiveness: 3 -> 2 -> 1 columns */
+@media (max-width: 980px) {
+  .capabilities-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .cap-card { min-height: 130px; padding: 18px; }
+  .cap-icon { flex-basis: 56px; height: 56px; }
+  .cap-icon svg { width: 28px; height: 28px; }
+}
+
+@media (max-width: 640px) {
+  .capabilities-row {
+    grid-template-columns: 1fr;
+  }
+  .cap-card { padding: 16px; min-height: 120px; }
+  .cap-icon { flex-basis: 48px; height: 48px; }
+  .cap-icon svg { width: 24px; height: 24px; }
+}
+
+/* -------------------------
+   Leadership / Team cards
+   - visible left glow bar + subtle float
+   ------------------------- */
+.team-section h2 { margin-bottom: 12px; }
+
+/* grid */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+/* base card */
+.team-card {
+  position: relative;
+  padding: 18px 20px 18px 22px; /* leave space for left bar */
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.005), rgba(255,255,255,0.002));
+  border: 1px solid var(--glass-border);
+  transition: transform .18s ease, box-shadow .2s ease, border-color .2s ease;
+  overflow: visible;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  will-change: transform;
+  animation: floatSubtle 6.5s ease-in-out infinite;
+}
+
+/* subtle float for gentle motion */
+@keyframes floatSubtle {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+/* left vertical glow bar (visible by default but subtle) */
+.team-card::after {
+  content: "";
+  position: absolute;
+  left: 12px;      /* distance from outer edge */
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0.22;      /* visible but not overpowering */
+  transition: opacity .22s ease, transform .18s ease, width .18s ease;
+  transform-origin: center;
+  z-index: 1;
+}
+
+/* subtle blurred halo behind card for hover */
+.team-card::before{
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(107,125,255,0.06), rgba(77,208,200,0.03));
+  filter: blur(18px);
+  opacity: 0;
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+/* hover & focus: intensify left bar and halo */
+.team-card:hover,
+.team-card:focus-within {
+  transform: translateY(-8px);
+  border-color: rgba(107,125,255,0.18);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  z-index: 2;
+}
+.team-card:hover::after,
+.team-card:focus-within::after {
+  opacity: 1;
+  transform: scaleY(1.02);
+  width: 6px;
+}
+.team-card:hover::before,
+.team-card:focus-within::before {
+  opacity: 1;
+  transform: scale(1.01);
+}
+
+/* team text */
+.team-name { font-weight: 700; margin-bottom: 6px; color: var(--text); }
+.team-role { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.team-bio { color: var(--muted); margin: 0; line-height: 1.5; }
+
+/* -------------------------
+   Milestones
+   ------------------------- */
+.milestones ol { padding-left: 18px; color: var(--muted); }
+.milestones li { margin: 8px 0; }
+
+/* -------------------------
+   CTA (bigger + premium glow)
+   ------------------------- */
+.cta {
+  padding: 36px 18px;
+  text-align: center;
+  margin-top: 20px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.002), rgba(255,255,255,0.001));
+  border: 1px solid var(--glass-border);
+}
+.cta h3 { margin: 0 0 8px; }
+.cta p { margin: 0 0 16px; color: var(--muted); max-width: 64ch; margin-left: auto; margin-right: auto; }
+
+.cta-btn {
+  display: inline-block;
+  padding: 16px 28px;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none !important;
+  color: #07121a;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 10px 30px rgba(107,125,255,0.16);
+  transition: transform .18s ease, box-shadow .24s ease;
+}
+.cta-btn:hover,
+.cta-btn:focus {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow:
+    0 18px 48px rgba(107,125,255,0.28),
+    0 28px 80px rgba(77,208,200,0.14);
+  outline: none;
+}
+
+/* -------------------------
+   Responsive tweaks
+   ------------------------- */
+@media (max-width: 980px) {
+  .hero-title { font-size: 32px; }
+  .hero-sub { max-width: 60ch; font-size: 15px; }
+  .cards-grid { gap: 14px; }
+  .team-grid { gap: 12px; }
+  .container { padding: 0 16px; }
+}
+
+@media (max-width: 600px) {
+  .hero-title { font-size: 26px; }
+  .kpi { min-width: 86px; }
+  .team-card { padding: 14px 16px 14px 18px; }
+  .cta { padding: 24px 12px; }
+}
