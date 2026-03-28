@@ -1,0 +1,25 @@
+# Shared local MySQL for Authentix. Run from repo root: docker compose up -d
+# Then start the backend with: SPRING_PROFILES_ACTIVE=docker
+# (see application-docker.properties.example → application-docker.properties)
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: authentix-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - authentix_db_data:/var/lib/mysql
+
+volumes:
+  authentix_db_data:

@@ -6,6 +6,8 @@ backend/*.iml
 backend/.sts4-cache
 # Local config with real credentials (never commit)
 backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-docker.properties
+.env
 
 # Frontend (Node)
 frontend/node_modules/

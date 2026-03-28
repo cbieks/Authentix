@@ -35,7 +35,7 @@ export default function Explorer() {
     api('/api/listings/recommended')
       .then((list) => setRecommended(list || []))
       .catch(() => setRecommended([]))
-  }, [])
+  }, [user])
 
   useEffect(() => {
     setLoading(true)

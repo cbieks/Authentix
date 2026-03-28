@@ -63,11 +63,12 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    setRecommendedLoading(true)
     api('/api/listings/recommended')
       .then((data) => setRecommended(Array.isArray(data) ? data.slice(0, MAX_CAROUSEL) : []))
       .catch(() => setRecommended([]))
       .finally(() => setRecommendedLoading(false))
-  }, [])
+  }, [user])
 
   useEffect(() => {
     setNearYouLoading(true)

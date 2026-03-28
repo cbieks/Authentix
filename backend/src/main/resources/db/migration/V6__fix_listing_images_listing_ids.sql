@@ -1,12 +1,12 @@
--- Demo listing images aligned to V4. Listings 1-5: NULL url (fill in later); 6-44: Pikachu → Hobbit.
--- Flyway: see V6__fix_listing_images_listing_ids.sql
+
+DELETE FROM listing_images;
 
 INSERT INTO listing_images (listing_id, url, sort_order) VALUES
-(1, NULL, 0),
-(2, NULL, 0),
-(3, NULL, 0),
-(4, NULL, 0),
-(5, NULL, 0),
+(1, 'https://dw7591lwb84er.cloudfront.net/eyJpdiI6IkhYNjVUQ0dNUGUzbndLNGxpRGkxbkE9PSIsInZhbHVlIjoiWlhzeUVsWFJGZlYzbVZUaVoyRDR0bFpGMk1KenpJR1JqSVhQMXM1NVp0YkFxbnlFekdNS1oyYlIxWmI3VkRCcmJ6aDRsRkY1S2VpRWVaMkpyWjF1cnc9PSIsIm1hYyI6IjU1ZmExMmE0Yzg4NWI4MDA4MDA1NmQ3YWM4OTY3M2NlZDNiYTg4MTA1ZmE3NmZjMGIwN2E5ZWQ1ODRmYWJmMDAifQ==', 0),
+(2, 'https://i.ebayimg.com/images/g/u38AAOSweDRnU6uP/s-l400.jpg', 0),
+(3, 'https://i.ebayimg.com/images/g/5gUAAOSwGgRkCXGz/s-l1600.jpg', 0),
+(4, 'https://www.picclickimg.com/rswAAOSwuptns2Bv/Lego-Star-Wars-Set-75157-Captain-Rex-AT-TE.webp', 0),
+(5, 'https://a.1stdibscdn.com/rolex-submariner-date-16610-black-dial-stainless-steel-box-papers-for-sale-picture-2/j_13091/j_8818092/IMG_1581715757143_master.jpg', 0),
 (6, 'https://dacardworld1.imgix.net/june24pkmn412.jpg?auto=format%2Ccompress&fm=jpg&h=1800&ixlib=php-3.3.1&w=1800&s=35df114b45b9d61ac637607cd8beff4c', 0),
 (7, 'https://i.ebayimg.com/images/g/UwYAAOSwUuRgPR0l/s-l400.jpg', 0),
 (8, 'https://images.production.sportscardinvestor.com/3_18_3-L', 0),

@@ -71,7 +71,7 @@ export default function ListingDetail() {
         .then(setSimilar)
         .catch(() => setSimilar([]))
     }
-  }, [listing?.id])
+  }, [listing?.id, user])
 
   useEffect(() => {
     if (!imageViewerOpen) return
