@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react'
+// /mnt/data/Home.jsx
+import { useState, useEffect, useRef } from 'react' // ← added useRef
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useDiscoveryZip } from '../context/DiscoveryZipContext'
 import { api } from '../api/client'
 import CategoryScroller from '../components/CategoryScroller'
 import ProductCarousel from '../components/ProductCarousel'
+import HeroCarousel from '../components/HeroCarousel'
 import './Home.css'
 
 const MAX_CAROUSEL = 10
@@ -104,6 +106,9 @@ export default function Home() {
         <CategoryScroller categories={categories} loading={categoriesLoading} />
       </section>
 
+      {/* big eBay-like hero carousel (does not replace your other carousels) */}
+      <HeroCarousel categories={categories} />
+
       <section className="home-section">
         <ProductCarousel
           title="Recommended for you"
@@ -121,21 +126,32 @@ export default function Home() {
           emptyMessage={zipForNearYou ? 'No listings in this area yet.' : 'Enter your ZIP below to see listings near you.'}
         />
         {!zipForNearYou && (
-          <div className="home-near-you-cta"><div className="home-zip-entry"><input
+          <div className="home-near-you-cta">
+            <div className="home-zip-entry">
+              <input
                 type="text"
                 value={zipInput}
                 onChange={(e) => setZipInput(e.target.value)}
                 placeholder="Enter ZIP / postal code"
                 maxLength={20}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleZipSave())}
-              />{user && (<input
-                type="text"
-                value={zipCountry}
-                onChange={(e) => setZipCountry(e.target.value)}
-                placeholder="US"
-                maxLength={2}
-                className="home-zip-country"
-              />)}<button type="button" onClick={handleZipSave} disabled={zipSaving || !zipInput.trim()}>{zipSaving ? 'Saving…' : 'See listings near you'}</button></div>{!user && <p className="home-zip-hint">Sign in to save your ZIP for future visits.</p>}</div>
+              />
+              {user && (
+                <input
+                  type="text"
+                  value={zipCountry}
+                  onChange={(e) => setZipCountry(e.target.value)}
+                  placeholder="US"
+                  maxLength={2}
+                  className="home-zip-country"
+                />
+              )}
+              <button type="button" onClick={handleZipSave} disabled={zipSaving || !zipInput.trim()}>
+                {zipSaving ? 'Saving…' : 'See listings near you'}
+              </button>
+            </div>
+            {!user && <p className="home-zip-hint">Sign in to save your ZIP for future visits.</p>}
+          </div>
         )}
       </section>
 
@@ -151,9 +167,7 @@ export default function Home() {
       <footer className="home-footer">
         <p>
           <Link to="/explore">Browse all</Link>
-          {user && (
-            <> · <Link to="/listings/new">Sell an item</Link></>
-          )}
+          {user && <> · <Link to="/listings/new">Sell an item</Link></>}
         </p>
       </footer>
     </div>

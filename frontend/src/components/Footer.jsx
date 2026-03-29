@@ -23,8 +23,8 @@ export default function Footer() {
               </p>
 
               <div className="brand-actions">
-                <a className="btn-primary" href="#">Get started</a>
-                <a className="link-muted" href="#">Browse all</a>
+                <a className="btn-primary" href="/register">Get started</a>
+                <a className="link-muted" href="/explore">Browse all</a>
               </div>
             </div>
           </div>
@@ -34,8 +34,8 @@ export default function Footer() {
               <h4>Marketplace</h4>
               <ul>
                 <li><a href="/explore">Explore</a></li>
-                <li><a href="#">Drops</a></li>
-                <li><a href="#">Brands</a></li>
+                {/* <li><a href="#">Drops</a></li>
+                <li><a href="#">Brands</a></li> */}
               </ul>
             </div>
 
@@ -84,9 +84,9 @@ export default function Footer() {
               <a aria-label="Instagram" href="#" className="social-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="0.8"/><path d="M8.5 12.2a3.5 3.5 0 106.99-.02 3.5 3.5 0 00-6.99.02z" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M17.8 6.2h.01" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/></svg>
               </a>
-              <a aria-label="Discord" href="#" className="social-btn">
+              {/* <a aria-label="Discord" href="#" className="social-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M8.5 14.5s.9-1.2 2.6-1.2 2.6 1.2 2.6 1.2" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/><path d="M20 4s-1.6 1.4-3.6 1.9C14.4 6.4 12.3 6 12 6s-2.4.4-4.4.1C5.6 5.4 4 4 4 4s1.6 3.2 2.1 5.3c.2.7.5 1.6.9 2.3C7.8 13 10.1 14 12 14s4.2-1 4.9-2.5c.4-.7.7-1.6.9-2.3C18.4 7.2 20 4 20 4z" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </a>
+              </a> */}
             </div>
           </div>
         </div>

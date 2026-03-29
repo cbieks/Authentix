@@ -6,7 +6,7 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background: #1e1b4b;
+  /* background: #1e1b4b; */
   color: #f8fafc;
   height: 100%;
 }
