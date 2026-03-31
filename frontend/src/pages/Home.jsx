@@ -107,7 +107,7 @@ export default function Home() {
       </section>
 
       {/* big eBay-like hero carousel (does not replace your other carousels) */}
-      <HeroCarousel categories={categories} />
+      <HeroCarousel products={recommended} />
 
       <section className="home-section">
         <ProductCarousel
