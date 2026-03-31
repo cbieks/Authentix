@@ -4,10 +4,12 @@ import "./About.css";
 import Footer from "../components/Footer"; // optional
 
 const TEAM = [
-  { name: "Cameron Lee", role: "Co-founder & CEO", bio: "Product strategist, former curator at major marketplaces." },
-  { name: "Caye Morgan", role: "Head of Product", bio: "Design-led product builder focused on trust and UX." },
-  { name: "Cursor Lin", role: "Engineering Lead", bio: "Systems architect with 10+ years building secure platforms." },
-  { name: "Claude Park", role: "Design Lead", bio: "Visual & product designer; builds clear, accessible interfaces." },
+  { name: "Cameron Bieker", role: "Co-founder & Lead Engineer", bio: "ChatGPT Prompt Engineer and Cursor Engineer" },
+  { name: "Caye Lee", role: "CPO", bio: <strong><strong>Chief Party Officer</strong></strong> },
+  { name: "Chloe Sooferan", role: "Co-founder & Creative director", bio: "Product strategist, former curator at major marketplaces." },
+  { name: "Nikki Wu", role: "Co-founder & CFO", bio:"Makes big money moves" },
+  // { name: "Cursor Lin", role: "Engineering Lead", bio: "Systems architect with 10+ years building secure platforms." },
+  // { name: "Claude Park", role: "Design Lead", bio: "Visual & product designer; builds clear, accessible interfaces." },
 ];
 
 const CREDIBILITY = [

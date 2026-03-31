@@ -7,7 +7,6 @@ backend/.sts4-cache
 # Local config with real credentials (never commit)
 backend/src/main/resources/application-local.properties
 backend/src/main/resources/application-docker.properties
-.env
 
 # Frontend (Node)
 frontend/node_modules/
@@ -20,3 +19,15 @@ frontend/dist/
 .DS_Store
 
 scripts/
+
+# Env files
+.env
+**/.env
+**/.env.local
+**/.env.*.local
+
+# miso
+scripts/
+node_modules/
+dist/
+build/
