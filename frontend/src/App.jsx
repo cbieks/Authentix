@@ -22,6 +22,7 @@ import Contact from './pages/Contact'
 import Help from './pages/Help'
 import Privacy from './pages/Privacy'
 import Careers from './pages/Careers'
+import CartPage from './pages/CartPage'
 
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/careers" element={<Careers />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route
           path="/account"
           element={
