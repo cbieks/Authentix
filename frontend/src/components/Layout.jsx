@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import { useDiscoveryZip } from '../context/DiscoveryZipContext'
 import { api } from '../api/client'
 import Footer from './Footer'
+import { useCartCount } from '../hooks/useCartCount'
 
 const CART_STORAGE_KEY = 'shopping_cart_v1'
 
 function readCartCount() {
+  
   try {
     const raw = localStorage.getItem(CART_STORAGE_KEY)
     const parsed = raw ? JSON.parse(raw) : []
@@ -22,6 +24,7 @@ export default function Layout({ children }) {
   const { user, logout, refetchUser } = useAuth()
   const { guestZip, setGuestZip } = useDiscoveryZip()
   const navigate = useNavigate()
+  const cartCount = useCartCount()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [zipMenuOpen, setZipMenuOpen] = useState(false)
@@ -29,25 +32,25 @@ export default function Layout({ children }) {
   const [zipCountry, setZipCountry] = useState('US')
   const [zipSaving, setZipSaving] = useState(false)
   const [zipClearedOptimistic, setZipClearedOptimistic] = useState(false)
-  const [cartCount, setCartCount] = useState(readCartCount())
+  // const [cartCount, setCartCount] = useState(readCartCount())
   const zipMenuRef = useRef(null)
 
   const resolvedZip = user ? (user.discoveryZipCode ?? '') : (guestZip ?? '')
   const currentZip = zipClearedOptimistic ? '' : resolvedZip
 
-  useEffect(() => {
-    function syncCart() {
-      setCartCount(readCartCount())
-    }
+  // useEffect(() => {
+  //   function syncCart() {
+  //     setCartCount(readCartCount())
+  //   }
 
-    syncCart()
-    window.addEventListener('storage', syncCart)
-    window.addEventListener('cart:updated', syncCart)
-    return () => {
-      window.removeEventListener('storage', syncCart)
-      window.removeEventListener('cart:updated', syncCart)
-    }
-  }, [])
+  //   syncCart()
+  //   window.addEventListener('storage', syncCart)
+  //   window.addEventListener('cart:updated', syncCart)
+  //   return () => {
+  //     window.removeEventListener('storage', syncCart)
+  //     window.removeEventListener('cart:updated', syncCart)
+  //   }
+  // }, [])
 
   useEffect(() => {
     if (zipMenuOpen) {
@@ -249,8 +252,8 @@ export default function Layout({ children }) {
             </Link>
             <Link to="/cart" className={`${navLinkClass} inline-flex items-center gap-2`}>
               Cart
-              {cartCount > 0 && (
-                <span className="rounded-full bg-cyan-300 px-2 py-0.5 text-xs font-bold text-slate-900">
+              {cartCount !== null && cartCount > 0 && (
+                <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-2 py-0.5 text-xs font-semibold text-white">
                   {cartCount}
                 </span>
               )}

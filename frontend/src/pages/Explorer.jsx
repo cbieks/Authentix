@@ -103,8 +103,8 @@ export default function Explorer() {
                 </div>
                 <div className="listing-card-body">
                   <span className="listing-card-price">${Number(listing.price).toFixed(2)}</span>
-                  <h3 className="listing-card-title">{listing.title}</h3>
-                  <p className="listing-card-meta">{listing.categoryName}</p>
+                  <h3 className="listing-card-title text-slate-700">{listing.title}</h3>
+                  <p className="listing-card-meta text-slate-700">{listing.categoryName}</p>
                 </div>
               </Link>
             ))}
@@ -123,7 +123,7 @@ export default function Explorer() {
           <div className="listing-grid">
             {listings.map((listing) => (
               <div key={listing.id} className="listing-card-wrapper">
-                <Link to={`/listings/${listing.id}`} className="listing-card">
+                <Link to={`/listings/${listing.id}`} className="listing-car">
                   <div className="listing-card-image">
                     {listing.images?.[0] ? (
                       <img src={listing.images[0]} alt="" />
@@ -152,7 +152,7 @@ export default function Explorer() {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="explorer-pagination">
+            <div className="explorer-pagination text-slate-700">
               <button type="button" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Previous</button>
               <span>Page {page + 1} of {totalPages}</span>
               <button type="button" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)}>Next</button>

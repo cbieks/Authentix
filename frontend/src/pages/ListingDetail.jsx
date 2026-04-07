@@ -178,18 +178,8 @@ export default function ListingDetail() {
       quantity: 1,
     }
 
-    try {
-      const result = await addCartItem(user, cartItem)
-      const nextItems = result.items || []
-
-      if (!user) {
-        window.dispatchEvent(new CustomEvent('cart:updated'))
-      }
-
-      setCartToast('Added to cart')
-    } catch {
-      setCartToast('Could not add to cart')
-    }
+    await addCartItem(user, cartItem)
+    setCartToast('Added to cart')
   }
 
   async function handleBuyClick() {
