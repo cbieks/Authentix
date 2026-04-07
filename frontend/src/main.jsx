@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './context/AuthContext'
 import { DiscoveryZipProvider } from './context/DiscoveryZipContext'
 import App from './App'
@@ -12,6 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <DiscoveryZipProvider>
           <App />
+          <Analytics />
         </DiscoveryZipProvider>
       </AuthProvider>
     </BrowserRouter>
