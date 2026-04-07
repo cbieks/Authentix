@@ -1,11 +1,25 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { api, setToken as persistToken } from '../api/client'
+import { mergeGuestCartIntoServer } from '../api/cart'
+
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const mergedUserIdRef = useRef(null);
+
+  useEffect(() => {
+    if (!user?.id) return
+    if (mergedUserIdRef.current === user.id) return
+
+    mergedUserIdRef.current = user.id
+    mergeGuestCartIntoServer(user).catch(() => {
+      // ignore merge errors
+    })
+  }, [user?.id])
+
 
   useEffect(() => {
     const token = localStorage.getItem('authentix_token');

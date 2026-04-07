@@ -5,6 +5,7 @@ import { Elements } from '@stripe/react-stripe-js'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../api/client'
 import CheckoutForm from '../components/CheckoutForm'
+import { addCartItem } from '../api/cart'
 
 const stripePk = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 const stripePromise = stripePk ? loadStripe(stripePk) : null
@@ -139,7 +140,32 @@ export default function ListingDetail() {
     }
   }
 
-  function addToCart() {
+  // function addToCart() {
+  //   if (!listing) return
+
+  //   const cartItem = {
+  //     listingId: listing.id,
+  //     title: listing.title,
+  //     price: Number(listing.price),
+  //     image: listing.images?.[0] || null,
+  //     sellerId: listing.sellerId,
+  //     quantity: 1,
+  //     shippingOption: listing.shippingOption,
+  //   }
+
+  //   const cart = readCart()
+  //   const existing = cart.find((item) => item.listingId === listing.id)
+  //   if (existing) {
+  //     existing.quantity = (existing.quantity || 1) + 1
+  //     writeCart(cart)
+  //     setCartToast('Updated cart quantity')
+  //     return
+  //   }
+
+  //   writeCart([...cart, cartItem])
+  //   setCartToast('Added to cart')
+  // }
+  async function addToCart() {
     if (!listing) return
 
     const cartItem = {
@@ -147,22 +173,22 @@ export default function ListingDetail() {
       title: listing.title,
       price: Number(listing.price),
       image: listing.images?.[0] || null,
-      sellerId: listing.sellerId,
-      quantity: 1,
       shippingOption: listing.shippingOption,
+      quantity: 1,
     }
 
-    const cart = readCart()
-    const existing = cart.find((item) => item.listingId === listing.id)
-    if (existing) {
-      existing.quantity = (existing.quantity || 1) + 1
-      writeCart(cart)
-      setCartToast('Updated cart quantity')
-      return
-    }
+    try {
+      const result = await addCartItem(user, cartItem)
+      const nextItems = result.items || []
 
-    writeCart([...cart, cartItem])
-    setCartToast('Added to cart')
+      if (!user) {
+        window.dispatchEvent(new CustomEvent('cart:updated'))
+      }
+
+      setCartToast('Added to cart')
+    } catch {
+      setCartToast('Could not add to cart')
+    }
   }
 
   async function handleBuyClick() {
