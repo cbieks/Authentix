@@ -172,7 +172,7 @@ export default function Layout({ children }) {
             <div className="relative" ref={zipMenuRef}>
               <button
                 type="button"
-                className={actionButtonClass}
+                className={`${actionButtonClass} gap-2`}
                 onClick={() => setZipMenuOpen((o) => !o)}
                 aria-expanded={zipMenuOpen}
                 aria-haspopup="dialog"

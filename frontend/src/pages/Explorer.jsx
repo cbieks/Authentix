@@ -111,9 +111,11 @@ export default function Explorer() {
           </div>
         </section>
       )}
-      <div className="explorer-ad">
-        <AdSlot slotId="1234567890" className="explorer-ad-slot" />
-      </div>
+      {showRecommended && (
+        <div className="explorer-ad">
+          <AdSlot slotId="1234567890" className="explorer-ad-slot" />
+        </div>
+      )}
       {loading ? (
         <p className="explorer-loading">Loading…</p>
       ) : listings.length === 0 ? (
@@ -123,7 +125,7 @@ export default function Explorer() {
           <div className="listing-grid">
             {listings.map((listing) => (
               <div key={listing.id} className="listing-card-wrapper">
-                <Link to={`/listings/${listing.id}`} className="listing-car">
+                <Link to={`/listings/${listing.id}`} className="listing-card">
                   <div className="listing-card-image">
                     {listing.images?.[0] ? (
                       <img src={listing.images[0]} alt="" />
@@ -159,6 +161,11 @@ export default function Explorer() {
             </div>
           )}
         </>
+      )}
+      {!showRecommended && (
+        <div className="explorer-ad explorer-ad--below-grid">
+          <AdSlot slotId="1234567890" className="explorer-ad-slot" />
+        </div>
       )}
     </div>
   )
