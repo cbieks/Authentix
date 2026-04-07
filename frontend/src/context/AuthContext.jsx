@@ -8,15 +8,15 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const mergedUserIdRef = useRef(null);
+  const mergedUserIdRef = useRef(null)
 
   useEffect(() => {
     if (!user?.id) return
     if (mergedUserIdRef.current === user.id) return
 
     mergedUserIdRef.current = user.id
-    mergeGuestCartIntoServer(user).catch(() => {
-      // ignore merge errors
+    mergeGuestCartIntoServer(user).finally(() => {
+      window.dispatchEvent(new CustomEvent('cart:updated'))
     })
   }, [user?.id])
 

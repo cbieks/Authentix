@@ -8,11 +8,13 @@ import CategoryScroller from '../components/CategoryScroller'
 import ProductCarousel from '../components/ProductCarousel'
 import HeroCarousel from '../components/HeroCarousel'
 import './Home.css'
+import { useCartCount } from '../hooks/useCartCount'
 
 const MAX_CAROUSEL = 10
 
 export default function Home() {
   const { user, refetchUser } = useAuth()
+  const cartCount = useCartCount()
   const { guestZip, setGuestZip } = useDiscoveryZip()
   const [categories, setCategories] = useState([])
   const [zipInput, setZipInput] = useState('')

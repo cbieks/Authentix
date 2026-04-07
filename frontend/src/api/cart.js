@@ -25,7 +25,7 @@ export function clearGuestCart() {
 export async function fetchCart(user) {
   if (!user) {
     const items = readGuestCart()
-    return { items, itemCount: items.reduce((sum, item) => sum + Number(item.quantity || 1), 0) }
+    return { items }
   }
 
   return api('/api/cart')
@@ -47,26 +47,31 @@ export async function addCartItem(user, item) {
     return { items: next }
   }
 
-  return api('/api/cart/items', {
+  const result = await api('/api/cart/items', {
     method: 'POST',
     body: JSON.stringify(item),
   })
+
+  window.dispatchEvent(new CustomEvent('cart:updated'))
+  return result
 }
 
 export async function setCartQuantity(user, listingId, quantity) {
   if (!user) {
-    const next = readGuestCart()
-      .map((item) => (item.listingId === listingId ? { ...item, quantity } : item))
-      .filter((item) => Number(item.quantity || 1) > 0)
-
+    const next = readGuestCart().map((item) =>
+      item.listingId === listingId ? { ...item, quantity } : item
+    )
     writeGuestCart(next)
     return { items: next }
   }
 
-  return api(`/api/cart/items/${listingId}`, {
+  const result = await api(`/api/cart/items/${listingId}`, {
     method: 'PATCH',
     body: JSON.stringify({ quantity }),
   })
+
+  window.dispatchEvent(new CustomEvent('cart:updated'))
+  return result
 }
 
 export async function removeCartItem(user, listingId) {
@@ -76,9 +81,12 @@ export async function removeCartItem(user, listingId) {
     return { items: next }
   }
 
-  return api(`/api/cart/items/${listingId}`, {
+  const result = await api(`/api/cart/items/${listingId}`, {
     method: 'DELETE',
   })
+
+  window.dispatchEvent(new CustomEvent('cart:updated'))
+  return result
 }
 
 export async function clearCart(user) {
@@ -87,9 +95,12 @@ export async function clearCart(user) {
     return { items: [] }
   }
 
-  return api('/api/cart', {
+  const result = await api('/api/cart', {
     method: 'DELETE',
   })
+
+  window.dispatchEvent(new CustomEvent('cart:updated'))
+  return result
 }
 
 export async function mergeGuestCartIntoServer(user) {
@@ -104,5 +115,10 @@ export async function mergeGuestCartIntoServer(user) {
   })
 
   clearGuestCart()
+  window.dispatchEvent(new CustomEvent('cart:updated'))
   return result
+}
+
+export function getCartCountFromItems(items = []) {
+  return items.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
 }

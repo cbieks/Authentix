@@ -221,7 +221,6 @@ import {
   removeCartItem,
   readGuestCart,
   setCartQuantity,
-  writeGuestCart,
 } from '../api/cart'
 
 export default function CartPage() {
@@ -231,19 +230,17 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const syncCart = () => {
-      if (!user) {
-        setItems(readGuestCart())
-      }
+    const syncGuestCart = () => {
+      if (!user) setItems(readGuestCart())
     }
 
-    syncCart()
-    window.addEventListener('storage', syncCart)
-    window.addEventListener('cart:updated', syncCart)
+    syncGuestCart()
+    window.addEventListener('storage', syncGuestCart)
+    window.addEventListener('cart:updated', syncGuestCart)
 
     return () => {
-      window.removeEventListener('storage', syncCart)
-      window.removeEventListener('cart:updated', syncCart)
+      window.removeEventListener('storage', syncGuestCart)
+      window.removeEventListener('cart:updated', syncGuestCart)
     }
   }, [user])
 
@@ -283,7 +280,6 @@ export default function CartPage() {
   async function updateQuantity(listingId, delta) {
     const current = items.find((item) => item.listingId === listingId)
     const nextQuantity = Math.max(1, Number(current?.quantity || 1) + delta)
-
     const result = await setCartQuantity(user, listingId, nextQuantity)
     setItems(result.items || [])
   }
@@ -440,10 +436,6 @@ export default function CartPage() {
               >
                 Proceed to checkout
               </button>
-
-              <p className="mt-3 text-xs leading-5 text-slate-500">
-                Signed-in carts are now server-backed. Guest carts stay in localStorage.
-              </p>
             </section>
           </aside>
         </div>
