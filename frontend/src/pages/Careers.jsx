@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./careers.css";
+import "./Careers.css";
 
 export default function CareersPage() {
   const [apply, setApply] = useState({ name: "", email: "", role: "", resume: "" });

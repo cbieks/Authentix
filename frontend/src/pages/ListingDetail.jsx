@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { api } from '../api/client'
 import CheckoutForm from '../components/CheckoutForm'
 import { addCartItem } from '../api/cart'
+import './ListingDetail.css'
 
 const stripePk = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
 const stripePromise = stripePk ? loadStripe(stripePk) : null
