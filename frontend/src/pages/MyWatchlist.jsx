@@ -61,10 +61,11 @@
 //     </div>
 //   )
 // }
-
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import { useAuth } from '../context/AuthContext'
+import { addCartItem } from '../api/cart'
 
 function money(value) {
   const n = Number(value)
@@ -77,15 +78,33 @@ function sortByPrice(items = []) {
 }
 
 export default function MyWatchlist() {
+  const { user } = useAuth()
+
   const [folders, setFolders] = useState([])
   const [activeFolderId, setActiveFolderId] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const [createModalOpen, setCreateModalOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
   const [savingFolder, setSavingFolder] = useState(false)
+
+  const [cartToast, setCartToast] = useState('')
+  const [renamingFolderId, setRenamingFolderId] = useState(null)
+  const [renameValue, setRenameValue] = useState('')
+
+  const [addingItemId, setAddingItemId] = useState(null)
+  const [targetFolderByItem, setTargetFolderByItem] = useState({})
+  const [deletingFolderId, setDeletingFolderId] = useState(null)
 
   useEffect(() => {
     load()
   }, [])
+
+  useEffect(() => {
+    if (!cartToast) return
+    const timer = window.setTimeout(() => setCartToast(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [cartToast])
 
   async function load() {
     setLoading(true)
@@ -113,49 +132,141 @@ export default function MyWatchlist() {
 
   const cheapestItem = activeItems[0] || null
 
+  async function handleAddToCart(item) {
+    if (!user || !item) return
+
+    const cartItem = {
+      listingId: item.listingId,
+      title: item.title,
+      price: Number(item.price),
+      image: item.images?.[0] || null,
+      shippingOption: item.shippingOption,
+      quantity: 1,
+    }
+
+    try {
+      await addCartItem(user, cartItem)
+      setCartToast('Added to cart')
+    } catch (err) {
+      console.error('Failed to add to cart', err)
+      alert(err?.message || 'Failed to add to cart')
+    }
+  }
+
   async function createFolder(e) {
     e.preventDefault()
     const name = newFolderName.trim()
     if (!name) return
 
+    const duplicate = folders.some((folder) => folder.name.trim().toLowerCase() === name.toLowerCase())
+    if (duplicate) {
+      alert('That folder name already exists.')
+      return
+    }
+
     setSavingFolder(true)
     try {
-      const created = await api('/api/users/me/watchlist-folders', {
+      await api('/api/users/me/watchlist-folders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       })
 
-      setFolders((prev) => [created, ...prev])
-      setActiveFolderId(created.id)
       setNewFolderName('')
+      setCreateModalOpen(false)
+      await load()
     } catch (err) {
       console.error('Failed to create folder', err)
+      alert(err?.message || 'Failed to create folder')
     } finally {
       setSavingFolder(false)
     }
   }
 
-  async function removeFromFolder(e, listingId) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!activeFolder) return
+  async function renameFolder(folderId) {
+    const name = renameValue.trim()
+    if (!name) return
 
     try {
-      await api(`/api/users/me/watchlist-folders/${activeFolder.id}/items/${listingId}`, {
+      await api(`/api/users/me/watchlist-folders/${folderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+
+      setRenamingFolderId(null)
+      setRenameValue('')
+      await load()
+    } catch (err) {
+      console.error('Failed to rename folder', err)
+      alert(err?.message || 'Failed to rename folder')
+    }
+  }
+
+  async function deleteFolder(folderId) {
+    const folder = folders.find((f) => f.id === folderId)
+    const ok = window.confirm(`Delete folder "${folder?.name || 'this folder'}"? This cannot be undone.`)
+    if (!ok) return
+
+    setDeletingFolderId(folderId)
+    try {
+      await api(`/api/users/me/watchlist-folders/${folderId}`, {
         method: 'DELETE',
       })
 
-      setFolders((prev) =>
-        prev.map((folder) =>
-          folder.id === activeFolder.id
-            ? { ...folder, items: (folder.items || []).filter((item) => item.id !== listingId) }
-            : folder
-        )
-      )
+      setRenamingFolderId((prev) => (prev === folderId ? null : prev))
+      setTargetFolderByItem((prev) => {
+        const next = { ...prev }
+        for (const key of Object.keys(next)) {
+          if (String(next[key]) === String(folderId)) {
+            delete next[key]
+          }
+        }
+        return next
+      })
+      await load()
+    } catch (err) {
+      console.error('Failed to delete folder', err)
+      alert(err?.message || 'Failed to delete folder')
+    } finally {
+      setDeletingFolderId(null)
+    }
+  }
+
+  async function addItemToFolder(listingId, folderId) {
+    if (!folderId || !listingId) return
+
+    setAddingItemId(listingId)
+    try {
+      await api(`/api/users/me/watchlist-folders/${folderId}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId }),
+      })
+
+      setTargetFolderByItem((prev) => ({ ...prev, [listingId]: '' }))
+      setCartToast('Added to folder')
+      await load()
+    } catch (err) {
+      console.error('Failed to add item to folder', err)
+      alert(err?.message || 'Failed to add item to folder')
+    } finally {
+      setAddingItemId(null)
+    }
+  }
+
+  async function removeFromFolder(folderId, listingId) {
+    if (!folderId || !listingId) return
+
+    try {
+      await api(`/api/users/me/watchlist-folders/${folderId}/items/${listingId}`, {
+        method: 'DELETE',
+      })
+
+      await load()
     } catch (err) {
       console.error('Failed to remove item from folder', err)
+      alert(err?.message || 'Failed to remove item from folder')
     }
   }
 
@@ -179,21 +290,15 @@ export default function MyWatchlist() {
           </p>
         </div>
 
-        <form onSubmit={createFolder} className="flex w-full gap-2 sm:w-auto">
-          <input
-            value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
-            placeholder="New folder name"
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm outline-none transition focus:border-slate-900 sm:w-64"
-          />
+        <div className="flex w-full gap-2 sm:w-auto">
           <button
-            type="submit"
-            disabled={savingFolder}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
           >
-            {savingFolder ? 'Creating…' : 'Create'}
+            Create folder
           </button>
-        </form>
+        </div>
       </div>
 
       {folders.length === 0 ? (
@@ -202,10 +307,16 @@ export default function MyWatchlist() {
             No folders yet. Create one for watches, sneakers, laptops, or anything else you want to track.
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            Saved listings from <Link to="/explore" className="font-medium text-slate-900 underline">Explore</Link> can be added into a folder.
+            Saved listings from{' '}
+            <Link to="/explore" className="font-medium text-slate-900 underline">
+              Explore
+            </Link>{' '}
+            can be added into a folder.
           </p>
         </div>
-      ) : (
+      ) : null}
+
+      {folders.length > 0 ? (
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-4">
@@ -219,12 +330,18 @@ export default function MyWatchlist() {
                 const isActive = folder.id === (activeFolder?.id || activeFolderId)
 
                 return (
-                  <button
+                  <div
                     key={folder.id}
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setActiveFolderId(folder.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setActiveFolderId(folder.id)
+                      }
+                    }}
                     className={[
-                      'w-full rounded-2xl border p-4 text-left transition',
+                      'w-full cursor-pointer rounded-2xl border p-4 text-left transition',
                       isActive
                         ? 'border-slate-900 bg-slate-900 text-white'
                         : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50',
@@ -248,10 +365,11 @@ export default function MyWatchlist() {
 
                     <div className="mt-3 flex gap-2">
                       {(folder.items || []).slice(0, 3).map((item) => (
-                        <div key={item.id} className="h-12 w-12 overflow-hidden rounded-xl border border-white/20 bg-slate-100">
-                          {item.images?.[0] ? (
-                            <img src={item.images[0]} alt="" className="h-full w-full object-cover" />
-                          ) : null}
+                        <div
+                          key={item.id}
+                          className="h-12 w-12 overflow-hidden rounded-xl border border-white/20 bg-slate-100"
+                        >
+                          {item.images?.[0] ? <img src={item.images[0]} alt="" className="h-full w-full object-cover" /> : null}
                         </div>
                       ))}
 
@@ -261,7 +379,54 @@ export default function MyWatchlist() {
                         </div>
                       ) : null}
                     </div>
-                  </button>
+
+                    <div className="mt-3 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setRenamingFolderId(folder.id)
+                          setRenameValue(folder.name)
+                        }}
+                      >
+                        Rename
+                      </button>
+
+                      <button
+                        type="button"
+                        className="rounded-lg border border-rose-300 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={deletingFolderId === folder.id}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteFolder(folder.id)
+                        }}
+                      >
+                        {deletingFolderId === folder.id ? 'Deleting…' : 'Delete folder'}
+                      </button>
+                    </div>
+
+                    {renamingFolderId === folder.id ? (
+                      <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none"
+                          placeholder="Folder name"
+                        />
+                        <button
+                          type="button"
+                          className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            renameFolder(folder.id)
+                          }}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 )
               })}
             </div>
@@ -291,16 +456,25 @@ export default function MyWatchlist() {
                   </div>
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {activeItems.map((listing, index) => {
+                    {activeItems.map((item, index) => {
                       const isCheapest = index === 0
+                      const selectedFolderId = targetFolderByItem[item.listingId] || activeFolder.id || ''
+                      const alreadyInSelectedFolder = folders.some(
+                        (folder) =>
+                          String(folder.id) === String(selectedFolderId) &&
+                          (folder.items || []).some((fItem) => fItem.listingId === item.listingId),
+                      )
 
                       return (
-                        <div key={listing.id} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                          <Link to={`/listings/${listing.id}`} className="block">
+                        <div
+                          key={item.id}
+                          className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                        >
+                          <Link to={`/listings/${item.listingId}`} className="block">
                             <div className="relative aspect-[4/3] bg-slate-100">
-                              {listing.images?.[0] ? (
+                              {item.images?.[0] ? (
                                 <img
-                                  src={listing.images[0]}
+                                  src={item.images[0]}
                                   alt=""
                                   className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                                 />
@@ -319,32 +493,59 @@ export default function MyWatchlist() {
 
                             <div className="space-y-2 p-4">
                               <div className="flex items-start justify-between gap-3">
-                                <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{listing.title}</h3>
-                                <span className="shrink-0 text-sm font-semibold text-emerald-700">
-                                  {money(listing.price)}
-                                </span>
+                                <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{item.title}</h3>
+                                <span className="shrink-0 text-sm font-semibold text-emerald-700">{money(item.price)}</span>
                               </div>
 
-                              <p className="text-xs text-slate-500">{listing.categoryName}</p>
+                              <p className="text-xs text-slate-500">{item.categoryName}</p>
                             </div>
                           </Link>
 
-                          <div className="flex gap-2 border-t border-slate-200 p-3">
-                            <button
-                              type="button"
-                              className="flex-1 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-                              onClick={() => console.log('Add to cart later:', listing.id)}
-                            >
-                              Add to cart
-                            </button>
+                          <div className="space-y-3 border-t border-slate-200 p-3">
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                className="flex-1 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                                onClick={() => handleAddToCart(item)}
+                              >
+                                Add to cart
+                              </button>
 
-                            <button
-                              type="button"
-                              onClick={(e) => removeFromFolder(e, listing.id)}
-                              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                            >
-                              Remove
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => removeFromFolder(activeFolder.id, item.listingId)}
+                                className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                              >
+                                Remove
+                              </button>
+                            </div>
+
+                            <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Add to folder</div>
+                              <div className="flex gap-2">
+                                <select
+                                  value={selectedFolderId}
+                                  onChange={(e) =>
+                                    setTargetFolderByItem((prev) => ({ ...prev, [item.listingId]: e.target.value }))
+                                  }
+                                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+                                >
+                                  {folders.map((folder) => (
+                                    <option key={folder.id} value={folder.id}>
+                                      {folder.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  disabled={addingItemId === item.listingId || alreadyInSelectedFolder}
+                                  onClick={() => addItemToFolder(item.listingId, Number(selectedFolderId))}
+                                  className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {addingItemId === item.listingId ? 'Adding…' : alreadyInSelectedFolder ? 'Added' : 'Add'}
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )
@@ -359,7 +560,54 @@ export default function MyWatchlist() {
             )}
           </main>
         </div>
-      )}
+      ) : null}
+
+      {createModalOpen ? (
+        <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-slate-950/50 px-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-slate-900">Create folder</h3>
+              <p className="mt-1 text-sm text-slate-500">Enter a name before creating the folder.</p>
+            </div>
+
+            <form onSubmit={createFolder} className="space-y-4">
+              <input
+                autoFocus
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder="Example: Sneakers"
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900"
+              />
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCreateModalOpen(false)
+                    setNewFolderName('')
+                  }}
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingFolder}
+                  className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {savingFolder ? 'Creating…' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {cartToast ? (
+        <div className="fixed bottom-4 right-4 z-[1200] rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg">
+          {cartToast}
+        </div>
+      ) : null}
     </div>
   )
 }
