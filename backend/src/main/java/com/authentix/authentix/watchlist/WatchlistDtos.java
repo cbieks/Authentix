@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class WatchlistDtos {
-
     public record CreateFolderRequest(String name) {}
     public record RenameFolderRequest(String name) {}
     public record AddItemRequest(Long listingId) {}

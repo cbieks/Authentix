@@ -96,6 +96,8 @@ export default function MyWatchlist() {
   const [targetFolderByItem, setTargetFolderByItem] = useState({})
   const [deletingFolderId, setDeletingFolderId] = useState(null)
 
+  const [savedListings, setSavedListings] = useState([])
+
   useEffect(() => {
     load()
   }, [])
@@ -109,12 +111,17 @@ export default function MyWatchlist() {
   async function load() {
     setLoading(true)
     try {
-      const data = await api('/api/users/me/watchlist-folders')
-      const nextFolders = Array.isArray(data) ? data : []
-      setFolders(nextFolders)
-      setActiveFolderId((prev) => prev ?? nextFolders[0]?.id ?? null)
+      const [savedData, folderData] = await Promise.all([
+        api('/api/users/me/watchlist'),
+        api('/api/users/me/watchlist-folders'),
+      ])
+
+      setSavedListings(Array.isArray(savedData) ? savedData : [])
+      setFolders(Array.isArray(folderData) ? folderData : [])
+      setActiveFolderId((prev) => prev ?? folderData?.[0]?.id ?? null)
     } catch (err) {
-      console.error('Failed to load watchlist folders', err)
+      console.error('Failed to load watchlist data', err)
+      setSavedListings([])
       setFolders([])
       setActiveFolderId(null)
     } finally {
@@ -136,7 +143,7 @@ export default function MyWatchlist() {
     if (!user || !item) return
 
     const cartItem = {
-      listingId: item.listingId,
+      listingId: item.listingId ?? item.id,
       title: item.title,
       price: Number(item.price),
       image: item.images?.[0] || null,
@@ -262,11 +269,24 @@ export default function MyWatchlist() {
       await api(`/api/users/me/watchlist-folders/${folderId}/items/${listingId}`, {
         method: 'DELETE',
       })
-
       await load()
     } catch (err) {
       console.error('Failed to remove item from folder', err)
       alert(err?.message || 'Failed to remove item from folder')
+    }
+  }
+
+  async function removeSaved(listingId) {
+    if (!listingId) return
+
+    try {
+      await api(`/api/listings/${listingId}/watchlist`, {
+        method: 'DELETE',
+      })
+      await load()
+    } catch (err) {
+      console.error('Failed to remove from saved watchlist', err)
+      alert(err?.message || 'Failed to remove from watchlist')
     }
   }
 
@@ -290,17 +310,132 @@ export default function MyWatchlist() {
           </p>
         </div>
 
-        <div className="flex w-full gap-2 sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setCreateModalOpen(true)}
-            className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-          >
-            Create folder
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setCreateModalOpen(true)}
+          className="w-full rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 sm:w-auto"
+        >
+          Create folder
+        </button>
       </div>
 
+      {/* MASTER SAVED SECTION */}
+      <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Saved</h2>
+            <p className="text-sm text-slate-500">
+              Removing here unhearts the item and removes it from all folders.
+            </p>
+          </div>
+          <p className="text-sm text-slate-500">{savedListings.length} item{savedListings.length === 1 ? '' : 's'}</p>
+        </div>
+
+        {savedListings.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+            <p className="text-sm text-slate-500">No saved items yet.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {savedListings.map((listing) => {
+              const selectedFolderId = targetFolderByItem[listing.id] || activeFolder?.id || ''
+              const alreadyInSelectedFolder = folders.some(
+                (folder) =>
+                  String(folder.id) === String(selectedFolderId) &&
+                  (folder.items || []).some((item) => item.listingId === listing.id),
+              )
+
+              return (
+                <div
+                  key={listing.id}
+                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <Link to={`/listings/${listing.id}`} className="block">
+                    <div className="relative aspect-[4/3] bg-slate-100">
+                      {listing.images?.[0] ? (
+                        <img
+                          src={listing.images[0]}
+                          alt=""
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                          No image
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{listing.title}</h3>
+                        <span className="shrink-0 text-sm font-semibold text-emerald-700">
+                          {money(listing.price)}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-500">{listing.categoryName}</p>
+                    </div>
+                  </Link>
+
+                  <div className="space-y-3 border-t border-slate-200 p-3">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="flex-1 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+                        onClick={() => handleAddToCart(listing)}
+                      >
+                        Add to cart
+                      </button>
+
+                      <button
+                        type="button"
+                        className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        onClick={() => removeSaved(listing.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    {folders.length > 0 ? (
+                      <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Add to folder
+                        </div>
+                        <div className="flex gap-2">
+                          <select
+                            value={selectedFolderId}
+                            onChange={(e) =>
+                              setTargetFolderByItem((prev) => ({ ...prev, [listing.id]: e.target.value }))
+                            }
+                            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+                          >
+                            {folders.map((folder) => (
+                              <option key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </option>
+                            ))}
+                          </select>
+
+                          <button
+                            type="button"
+                            disabled={addingItemId === listing.id || alreadyInSelectedFolder}
+                            onClick={() => addItemToFolder(listing.id, Number(selectedFolderId))}
+                            className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {addingItemId === listing.id ? 'Adding…' : alreadyInSelectedFolder ? 'Added' : 'Add'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* FOLDER SECTION */}
       {folders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <p className="text-sm text-slate-600">
@@ -314,9 +449,7 @@ export default function MyWatchlist() {
             can be added into a folder.
           </p>
         </div>
-      ) : null}
-
-      {folders.length > 0 ? (
+      ) : (
         <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-4">
@@ -356,7 +489,11 @@ export default function MyWatchlist() {
                       </div>
 
                       {lowest ? (
-                        <div className={isActive ? 'text-right text-xs text-slate-300' : 'text-right text-xs text-slate-500'}>
+                        <div
+                          className={
+                            isActive ? 'text-right text-xs text-slate-300' : 'text-right text-xs text-slate-500'
+                          }
+                        >
                           Lowest
                           <div className="font-semibold">{money(lowest.price)}</div>
                         </div>
@@ -369,7 +506,9 @@ export default function MyWatchlist() {
                           key={item.id}
                           className="h-12 w-12 overflow-hidden rounded-xl border border-white/20 bg-slate-100"
                         >
-                          {item.images?.[0] ? <img src={item.images[0]} alt="" className="h-full w-full object-cover" /> : null}
+                          {item.images?.[0] ? (
+                            <img src={item.images[0]} alt="" className="h-full w-full object-cover" />
+                          ) : null}
                         </div>
                       ))}
 
@@ -494,7 +633,9 @@ export default function MyWatchlist() {
                             <div className="space-y-2 p-4">
                               <div className="flex items-start justify-between gap-3">
                                 <h3 className="line-clamp-2 text-sm font-semibold text-slate-900">{item.title}</h3>
-                                <span className="shrink-0 text-sm font-semibold text-emerald-700">{money(item.price)}</span>
+                                <span className="shrink-0 text-sm font-semibold text-emerald-700">
+                                  {money(item.price)}
+                                </span>
                               </div>
 
                               <p className="text-xs text-slate-500">{item.categoryName}</p>
@@ -516,12 +657,14 @@ export default function MyWatchlist() {
                                 onClick={() => removeFromFolder(activeFolder.id, item.listingId)}
                                 className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                               >
-                                Remove
+                                Remove from folder
                               </button>
                             </div>
 
                             <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Add to folder</div>
+                              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                Add to folder
+                              </div>
                               <div className="flex gap-2">
                                 <select
                                   value={selectedFolderId}
@@ -536,13 +679,18 @@ export default function MyWatchlist() {
                                     </option>
                                   ))}
                                 </select>
+
                                 <button
                                   type="button"
                                   disabled={addingItemId === item.listingId || alreadyInSelectedFolder}
                                   onClick={() => addItemToFolder(item.listingId, Number(selectedFolderId))}
                                   className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                  {addingItemId === item.listingId ? 'Adding…' : alreadyInSelectedFolder ? 'Added' : 'Add'}
+                                  {addingItemId === item.listingId
+                                    ? 'Adding…'
+                                    : alreadyInSelectedFolder
+                                      ? 'Added'
+                                      : 'Add'}
                                 </button>
                               </div>
                             </div>
@@ -560,7 +708,7 @@ export default function MyWatchlist() {
             )}
           </main>
         </div>
-      ) : null}
+      )}
 
       {createModalOpen ? (
         <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-slate-950/50 px-4">
