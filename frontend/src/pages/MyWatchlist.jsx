@@ -548,7 +548,7 @@ export default function MyWatchlist() {
                             className="text-slate-700 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
                           >
                             {selectedCount > 0 ? `${selectedCount} selected` : 'Select'}
-                          </button>
+                          </select>
 
                           <button
                             type="button"
