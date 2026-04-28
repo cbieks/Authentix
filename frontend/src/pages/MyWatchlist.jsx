@@ -540,7 +540,7 @@ export default function MyWatchlist() {
                           Add to folder
                         </div>
                         <div className="flex gap-2">
-                          <select
+                          {/* <select
                             value={selectedFolderId}
                             onChange={(e) =>
                               setTargetFolderByItem((prev) => ({ ...prev, [listing.id]: e.target.value }))
@@ -548,7 +548,7 @@ export default function MyWatchlist() {
                             className="text-slate-700 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
                           >
                             {selectedCount > 0 ? `${selectedCount} selected` : 'Select'}
-                          </select>
+                          </select> */}
 
                           <button
                             type="button"
