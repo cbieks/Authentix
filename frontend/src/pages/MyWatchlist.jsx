@@ -93,7 +93,8 @@ export default function MyWatchlist() {
   const [renameValue, setRenameValue] = useState('')
 
   const [addingItemId, setAddingItemId] = useState(null)
-  const [targetFolderByItem, setTargetFolderByItem] = useState({})
+  const [openFolderPickerItemId, setOpenFolderPickerItemId] = useState(null)
+  const [pendingFolderIdsByItem, setPendingFolderIdsByItem] = useState({})
   const [deletingFolderId, setDeletingFolderId] = useState(null)
 
   const [savedListings, setSavedListings] = useState([])
@@ -107,6 +108,16 @@ export default function MyWatchlist() {
     const timer = window.setTimeout(() => setCartToast(''), 2200)
     return () => window.clearTimeout(timer)
   }, [cartToast])
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (event.target.closest('[data-folder-picker-container="true"]')) return
+      setOpenFolderPickerItemId(null)
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   async function load() {
     setLoading(true)
@@ -132,6 +143,10 @@ export default function MyWatchlist() {
   const activeFolder = useMemo(() => {
     return folders.find((folder) => folder.id === activeFolderId) || folders[0] || null
   }, [folders, activeFolderId])
+
+  const sortedFolders = useMemo(() => {
+    return [...folders].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+  }, [folders])
 
   const activeItems = useMemo(() => {
     return sortByPrice(activeFolder?.items || [])
@@ -222,12 +237,10 @@ export default function MyWatchlist() {
       })
 
       setRenamingFolderId((prev) => (prev === folderId ? null : prev))
-      setTargetFolderByItem((prev) => {
+      setPendingFolderIdsByItem((prev) => {
         const next = { ...prev }
         for (const key of Object.keys(next)) {
-          if (String(next[key]) === String(folderId)) {
-            delete next[key]
-          }
+          next[key] = (next[key] || []).filter((id) => String(id) !== String(folderId))
         }
         return next
       })
@@ -257,6 +270,129 @@ export default function MyWatchlist() {
     } catch (err) {
       console.error('Failed to add item to folder', err)
       alert(err?.message || 'Failed to add item to folder')
+    } finally {
+      setAddingItemId(null)
+    }
+  }
+
+  function buildFolderItemFromListing(listingId) {
+    for (const folder of folders) {
+      const existing = (folder.items || []).find((item) => item.listingId === listingId)
+      if (existing) return existing
+    }
+
+    const saved = savedListings.find((listing) => listing.id === listingId)
+    if (!saved) return null
+
+    return {
+      id: saved.id,
+      listingId: saved.id,
+      title: saved.title,
+      price: saved.price,
+      categoryName: saved.categoryName,
+      images: saved.images || [],
+      shippingOption: saved.shippingOption || null,
+    }
+  }
+
+  function applyFolderSelectionLocally(listingId, desiredFolderIds) {
+    const desiredSet = new Set([...desiredFolderIds].map(String))
+    const folderItem = buildFolderItemFromListing(listingId)
+
+    setFolders((prev) =>
+      prev.map((folder) => {
+        const inDesired = desiredSet.has(String(folder.id))
+        const items = folder.items || []
+        const hasItem = items.some((item) => item.listingId === listingId)
+
+        if (inDesired && !hasItem && folderItem) {
+          return { ...folder, items: [...items, folderItem] }
+        }
+        if (!inDesired && hasItem) {
+          return { ...folder, items: items.filter((item) => item.listingId !== listingId) }
+        }
+        return folder
+      }),
+    )
+  }
+
+  function currentFolderIdsForListing(listingId) {
+    return folders
+      .filter((folder) => (folder.items || []).some((item) => item.listingId === listingId))
+      .map((folder) => String(folder.id))
+  }
+
+  function pendingFolderIdsForListing(listingId) {
+    const key = String(listingId)
+    return pendingFolderIdsByItem[key] ?? currentFolderIdsForListing(listingId)
+  }
+
+  function hasFolderSelectionChanges(listingId) {
+    const desired = new Set(pendingFolderIdsForListing(listingId))
+    const current = new Set(currentFolderIdsForListing(listingId))
+    if (desired.size !== current.size) return true
+    for (const id of desired) {
+      if (!current.has(id)) return true
+    }
+    return false
+  }
+
+  function toggleFolderPicker(listingId) {
+    const key = String(listingId)
+    setOpenFolderPickerItemId((prev) => (prev === key ? null : key))
+    setPendingFolderIdsByItem((prev) => {
+      if (prev[key]) return prev
+      return { ...prev, [key]: currentFolderIdsForListing(listingId) }
+    })
+  }
+
+  function togglePendingFolder(listingId, folderId) {
+    const key = String(listingId)
+    const folderKey = String(folderId)
+    setPendingFolderIdsByItem((prev) => {
+      const current = new Set(prev[key] ?? currentFolderIdsForListing(listingId))
+      if (current.has(folderKey)) current.delete(folderKey)
+      else current.add(folderKey)
+      return { ...prev, [key]: [...current] }
+    })
+  }
+
+  async function saveItemFolders(listingId) {
+    if (!listingId) return
+    const key = String(listingId)
+    const desired = new Set(pendingFolderIdsForListing(listingId))
+    const current = new Set(currentFolderIdsForListing(listingId))
+    const addIds = [...desired].filter((id) => !current.has(id))
+    const removeIds = [...current].filter((id) => !desired.has(id))
+
+    if (addIds.length === 0 && removeIds.length === 0) {
+      setOpenFolderPickerItemId(null)
+      return
+    }
+
+    setAddingItemId(listingId)
+    try {
+      await Promise.all([
+        ...addIds.map((folderId) =>
+          api(`/api/users/me/watchlist-folders/${folderId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ listingId }),
+          }),
+        ),
+        ...removeIds.map((folderId) =>
+          api(`/api/users/me/watchlist-folders/${folderId}/items/${listingId}`, {
+            method: 'DELETE',
+          }),
+        ),
+      ])
+
+      setOpenFolderPickerItemId(null)
+      applyFolderSelectionLocally(listingId, desired)
+      setCartToast('Saved')
+    } catch (err) {
+      console.error('Failed to save item folder selections', err)
+      alert(err?.message || 'Failed to save folder selections')
     } finally {
       setAddingItemId(null)
     }
@@ -304,7 +440,7 @@ export default function MyWatchlist() {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">My watchlist</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-white">My watchlist</h1>
           <p className="mt-1 text-sm text-slate-500">
             Organize saved items into named folders and compare prices inside each one.
           </p>
@@ -323,7 +459,7 @@ export default function MyWatchlist() {
       <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Saved</h2>
+            <h2 className="text-xl font-semibold text-slate-900">All Saved</h2>
             <p className="text-sm text-slate-500">
               Removing here unhearts the item and removes it from all folders.
             </p>
@@ -338,17 +474,19 @@ export default function MyWatchlist() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {savedListings.map((listing) => {
-              const selectedFolderId = targetFolderByItem[listing.id] || activeFolder?.id || ''
-              const alreadyInSelectedFolder = folders.some(
-                (folder) =>
-                  String(folder.id) === String(selectedFolderId) &&
-                  (folder.items || []).some((item) => item.listingId === listing.id),
-              )
+              const pickerKey = String(listing.id)
+              const pendingFolderIds = pendingFolderIdsForListing(listing.id)
+              const selectedCount = pendingFolderIds.length
+              const isPickerOpen = openFolderPickerItemId === pickerKey
+              const hasChanges = hasFolderSelectionChanges(listing.id)
 
               return (
                 <div
                   key={listing.id}
-                  className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className={[
+                    'group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+                    isPickerOpen ? 'z-40' : 'z-0',
+                  ].join(' ')}
                 >
                   <Link to={`/listings/${listing.id}`} className="block">
                     <div className="relative aspect-[4/3] bg-slate-100">
@@ -401,29 +539,50 @@ export default function MyWatchlist() {
                         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                           Add to folder
                         </div>
-                        <div className="flex gap-2">
-                          <select
-                            value={selectedFolderId}
-                            onChange={(e) =>
-                              setTargetFolderByItem((prev) => ({ ...prev, [listing.id]: e.target.value }))
-                            }
-                            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+                        <div className="relative flex gap-2" data-folder-picker-container="true">
+                          <button
+                            type="button"
+                            onClick={() => toggleFolderPicker(listing.id)}
+                            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-900 outline-none"
                           >
-                            {folders.map((folder) => (
-                              <option key={folder.id} value={folder.id}>
-                                {folder.name}
-                              </option>
-                            ))}
-                          </select>
+                            {selectedCount > 0 ? `${selectedCount} selected` : 'Select'}
+                          </button>
 
                           <button
                             type="button"
-                            disabled={addingItemId === listing.id || alreadyInSelectedFolder}
-                            onClick={() => addItemToFolder(listing.id, Number(selectedFolderId))}
-                            className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={addingItemId === listing.id || !hasChanges}
+                            onClick={() => saveItemFolders(listing.id)}
+                            className={[
+                              'rounded-xl px-3 py-2 text-sm font-medium transition',
+                              addingItemId === listing.id || !hasChanges
+                                ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                                : 'bg-slate-900 text-white hover:bg-slate-800',
+                            ].join(' ')}
                           >
-                            {addingItemId === listing.id ? 'Adding…' : alreadyInSelectedFolder ? 'Added' : 'Add'}
+                            {addingItemId === listing.id ? 'Saving…' : 'Save'}
                           </button>
+
+                          {isPickerOpen ? (
+                            <div className="absolute left-0 right-20 top-full z-50 mt-2 max-h-56 overflow-auto rounded-xl border border-slate-300 bg-white p-2 shadow-lg">
+                              {folders.map((folder) => {
+                                const isChecked = pendingFolderIds.includes(String(folder.id))
+                                return (
+                                  <label
+                                    key={folder.id}
+                                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-900 hover:bg-slate-50"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => togglePendingFolder(listing.id, folder.id)}
+                                      className="h-4 w-4 rounded border-slate-300 text-slate-900"
+                                    />
+                                    <span>{folder.name}</span>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     ) : null}
@@ -457,7 +616,7 @@ export default function MyWatchlist() {
             </div>
 
             <div className="space-y-2">
-              {folders.map((folder) => {
+              {sortedFolders.map((folder) => {
                 const sorted = sortByPrice(folder.items || [])
                 const lowest = sorted[0]
                 const isActive = folder.id === (activeFolder?.id || activeFolderId)
@@ -476,14 +635,14 @@ export default function MyWatchlist() {
                     className={[
                       'w-full cursor-pointer rounded-2xl border p-4 text-left transition',
                       isActive
-                        ? 'border-slate-900 bg-slate-900 text-white'
+                        ? 'border-slate-900 bg-white text-slate-900 ring-1 ring-slate-900'
                         : 'border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50',
                     ].join(' ')}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="text-sm font-semibold">{folder.name}</div>
-                        <div className={isActive ? 'text-xs text-slate-300' : 'text-xs text-slate-500'}>
+                        <div className="text-sm font-semibold text-slate-900">{folder.name}</div>
+                        <div className={isActive ? 'text-xs text-slate-600' : 'text-xs text-slate-500'}>
                           {sorted.length} item{sorted.length === 1 ? '' : 's'}
                         </div>
                       </div>
@@ -491,7 +650,7 @@ export default function MyWatchlist() {
                       {lowest ? (
                         <div
                           className={
-                            isActive ? 'text-right text-xs text-slate-300' : 'text-right text-xs text-slate-500'
+                            isActive ? 'text-right text-xs text-slate-600' : 'text-right text-xs text-slate-500'
                           }
                         >
                           Lowest
@@ -504,7 +663,7 @@ export default function MyWatchlist() {
                       {(folder.items || []).slice(0, 3).map((item) => (
                         <div
                           key={item.id}
-                          className="h-12 w-12 overflow-hidden rounded-xl border border-white/20 bg-slate-100"
+                          className="h-12 w-12 overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
                         >
                           {item.images?.[0] ? (
                             <img src={item.images[0]} alt="" className="h-full w-full object-cover" />
@@ -513,7 +672,7 @@ export default function MyWatchlist() {
                       ))}
 
                       {(folder.items || []).length === 0 ? (
-                        <div className={isActive ? 'text-xs text-slate-300' : 'text-xs text-slate-500'}>
+                        <div className={isActive ? 'text-xs text-slate-600' : 'text-xs text-slate-500'}>
                           Empty folder
                         </div>
                       ) : null}
@@ -597,17 +756,19 @@ export default function MyWatchlist() {
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {activeItems.map((item, index) => {
                       const isCheapest = index === 0
-                      const selectedFolderId = targetFolderByItem[item.listingId] || activeFolder.id || ''
-                      const alreadyInSelectedFolder = folders.some(
-                        (folder) =>
-                          String(folder.id) === String(selectedFolderId) &&
-                          (folder.items || []).some((fItem) => fItem.listingId === item.listingId),
-                      )
+                      const pickerKey = String(item.listingId)
+                      const pendingFolderIds = pendingFolderIdsForListing(item.listingId)
+                      const selectedCount = pendingFolderIds.length
+                      const isPickerOpen = openFolderPickerItemId === pickerKey
+                      const hasChanges = hasFolderSelectionChanges(item.listingId)
 
                       return (
                         <div
                           key={item.id}
-                          className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                          className={[
+                            'group relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md',
+                            isPickerOpen ? 'z-40' : 'z-0',
+                          ].join(' ')}
                         >
                           <Link to={`/listings/${item.listingId}`} className="block">
                             <div className="relative aspect-[4/3] bg-slate-100">
@@ -665,33 +826,52 @@ export default function MyWatchlist() {
                               <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 Add to folder
                               </div>
-                              <div className="flex gap-2">
-                                <select
-                                  value={selectedFolderId}
-                                  onChange={(e) =>
-                                    setTargetFolderByItem((prev) => ({ ...prev, [item.listingId]: e.target.value }))
-                                  }
-                                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
+                              <div className="relative flex gap-2" data-folder-picker-container="true">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFolderPicker(item.listingId)}
+                                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-900 outline-none"
                                 >
-                                  {folders.map((folder) => (
-                                    <option key={folder.id} value={folder.id}>
-                                      {folder.name}
-                                    </option>
-                                  ))}
-                                </select>
+                                  {selectedCount > 0 ? `${selectedCount} selected` : 'Select'}
+                                </button>
 
                                 <button
                                   type="button"
-                                  disabled={addingItemId === item.listingId || alreadyInSelectedFolder}
-                                  onClick={() => addItemToFolder(item.listingId, Number(selectedFolderId))}
-                                  className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                  disabled={addingItemId === item.listingId || !hasChanges}
+                                  onClick={() => saveItemFolders(item.listingId)}
+                                  className={[
+                                    'rounded-xl px-3 py-2 text-sm font-medium transition',
+                                    addingItemId === item.listingId || !hasChanges
+                                      ? 'cursor-not-allowed bg-slate-300 text-slate-500'
+                                      : 'bg-slate-900 text-white hover:bg-slate-800',
+                                  ].join(' ')}
                                 >
                                   {addingItemId === item.listingId
-                                    ? 'Adding…'
-                                    : alreadyInSelectedFolder
-                                      ? 'Added'
-                                      : 'Add'}
+                                    ? 'Saving…'
+                                    : 'Save'}
                                 </button>
+
+                                {isPickerOpen ? (
+                                  <div className="absolute left-0 right-20 top-full z-50 mt-2 max-h-56 overflow-auto rounded-xl border border-slate-300 bg-white p-2 shadow-lg">
+                                    {folders.map((folder) => {
+                                      const isChecked = pendingFolderIds.includes(String(folder.id))
+                                      return (
+                                        <label
+                                          key={folder.id}
+                                          className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-900 hover:bg-slate-50"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={isChecked}
+                                            onChange={() => togglePendingFolder(item.listingId, folder.id)}
+                                            className="h-4 w-4 rounded border-slate-300 text-slate-900"
+                                          />
+                                          <span>{folder.name}</span>
+                                        </label>
+                                      )
+                                    })}
+                                  </div>
+                                ) : null}
                               </div>
                             </div>
                           </div>
@@ -724,7 +904,7 @@ export default function MyWatchlist() {
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Example: Sneakers"
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900"
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900"
               />
 
               <div className="flex justify-end gap-2">
