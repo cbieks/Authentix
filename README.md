@@ -21,9 +21,9 @@ Use this when you want the **same schema and demo data** as everyone else (MySQL
    Compose maps the container to host port **3307** (so a local MySQL on 3306 can still run). If you change the mapping in `docker-compose.yml`, update `spring.datasource.url` in `application-docker.properties` to match.
 5. **Run the backend** with the `docker` profile (Flyway applies `backend/src/main/resources/db/migration/*.sql`, then Hibernate **validates** the schema):
    - Windows (PowerShell): `$env:SPRING_PROFILES_ACTIVE="docker"; .\mvnw.cmd spring-boot:run` (from `backend/`)
-6. **Seeded logins:** `V3` creates seller **id 2** (see `V3__seed_demo_user.sql` for email—used for listings **1–5**). `V7` adds **`demo@authentix.local`** (user **id 3**) for listings **6–44**. `V8` sets that demo user’s password to the literal **`password`** (BCrypt). Change or remove in production.
+6. **Seeded logins:** `V3` creates seller **id 2** (see `V3__seed_demo_user.sql` for email—used for listings **1–5**). `V7` adds **`demo@authentix.local`** (user **id 3**) for listings **6–44**. `V8`/`V10` manage that demo user password hash; keep plaintext credentials out of git and rotate via new migrations as needed.
 
-Migrations are versioned: `V1` (tables), `V2`–`V4` (categories, users, listings), `V6` (`listing_images`), `V7` (team demo seller + listings 6–44), `V8` (demo password). If Flyway reports a **checksum mismatch** after pulling an edited migration, use **repair** or fix `flyway_schema_history` as needed. New schema changes = higher version numbers only.
+Migrations are versioned: `V1` (tables), `V2`–`V4` (categories, users, listings), `V6` (`listing_images`), `V7` (team demo seller + listings 6–44), `V8`/`V10` (demo password rotation). If Flyway reports a **checksum mismatch** after pulling an edited migration, use **repair** or fix `flyway_schema_history` as needed. New schema changes = higher version numbers only.
 
 **Local MySQL without Docker (optional):** use `SPRING_PROFILES_ACTIVE=local` and create `application-local.properties` (gitignored) with your JDBC URL, user, and password. Flyway stays **disabled** by default (`spring.flyway.enabled=false` in `application.properties`); schema is managed by Hibernate `ddl-auto` unless you enable Flyway yourself.
 
@@ -43,7 +43,29 @@ Migrations are versioned: `V1` (tables), `V2`–`V4` (categories, users, listing
 
 ## Production (Vercel + Railway)
 
-- **Backend + database (Railway):** Create a MySQL service and a Spring Boot service. In the backend service, set **environment variables** in the Railway UI (e.g. `SPRING_DATASOURCE_*`, `JWT_SECRET`, `app.cors.allowed-origins` with your Vercel URL; for Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `stripe.connect.success-url`, `stripe.connect.refresh-url`). No secrets in repo or in `application.properties`.
+- **Backend + database (Railway):**
+  - Create a MySQL service and a Spring Boot service.
+  - Set backend **Root Directory** to `backend` so Railway builds from `backend/pom.xml`.
+  - Configure backend env vars in Railway:
+    - `SPRING_DATASOURCE_URL` = `${{MySQL.MYSQL_URL}}` (supports both `mysql://...` and `jdbc:mysql://...`; app normalizes automatically)
+    - `SPRING_DATASOURCE_USERNAME` = `${{MySQL.MYSQLUSER}}`
+    - `SPRING_DATASOURCE_PASSWORD` = `${{MySQL.MYSQLPASSWORD}}`
+    - `APP_CORS_ALLOWED_ORIGINS=https://<your-vercel-domain>`
+    - `JWT_SECRET=<strong-secret>`
+    - Optional Stripe:
+      - `STRIPE_SECRET_KEY`
+      - `STRIPE_WEBHOOK_SECRET`
+      - `STRIPE_CONNECT_SUCCESS_URL`
+      - `STRIPE_CONNECT_REFRESH_URL`
+  - `server.port` is bound from Railway `PORT` automatically.
+  - Flyway is enabled on startup and runs migrations from `classpath:db/migration`.
 - **Frontend (Vercel):** Set `VITE_API_URL` to your Railway backend URL and `VITE_STRIPE_PUBLISHABLE_KEY` for checkout.
+
+### Railway deploy validation checklist
+
+1. Deployment logs show Flyway validating/applying migrations.
+2. Deployment logs show app listening on Railway `PORT`.
+3. `GET https://<railway-backend>/actuator/health` returns UP.
+4. Requests from your Vercel domain succeed without CORS errors.
 
 See `authentix_marketplace_plan_2b667dc1.plan.md` for the full feature plan.

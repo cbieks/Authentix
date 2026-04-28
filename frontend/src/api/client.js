@@ -23,8 +23,20 @@ export async function api(path, options = {}) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || res.statusText);
   }
-  if (res.status === 204) return null;
-  return res.json();
+  if (res.status === 204 || res.status === 205) return null;
+
+  const contentLength = res.headers.get('content-length');
+  if (contentLength === '0') return null;
+
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await res.text();
+    return text ? text : null;
+  }
+
+  const text = await res.text();
+  if (!text) return null;
+  return JSON.parse(text);
 }
 
 export function setToken(token) {

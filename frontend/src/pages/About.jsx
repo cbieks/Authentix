@@ -1,5 +1,6 @@
 // src/pages/About.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import "./About.css";
 import Footer from "../components/Footer"; // optional
 
@@ -138,7 +139,7 @@ export default function About() {
         <section className="cta" aria-labelledby="contact-heading">
           <h3 id="contact-heading">Work with us</h3>
           <p>If you'd like to partner, collaborate, or learn more about our verification process, get in touch.</p>
-          <a className="cta-btn" href="/contact" role="button">Contact us</a>
+          <Link className="cta-btn" to="/contact" role="button">Contact us</Link>
         </section>
       </main>
 
