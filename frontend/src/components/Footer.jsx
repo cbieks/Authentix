@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./Footer.css";
 
 export default function Footer() {
@@ -23,8 +24,8 @@ export default function Footer() {
               </p>
 
               <div className="brand-actions">
-                <a className="btn-primary" href="/register">Get started</a>
-                <a className="link-muted" href="/explore">Browse all</a>
+                <Link className="btn-primary" to="/register">Get started</Link>
+                <Link className="link-muted" to="/explore">Browse all</Link>
               </div>
             </div>
           </div>
@@ -33,7 +34,7 @@ export default function Footer() {
             <div className="link-column">
               <h4>Marketplace</h4>
               <ul>
-                <li><a href="/explore">Explore</a></li>
+                <li><Link to="/explore">Explore</Link></li>
                 {/* <li><a href="#">Drops</a></li>
                 <li><a href="#">Brands</a></li> */}
               </ul>
@@ -42,8 +43,8 @@ export default function Footer() {
             <div className="link-column">
               <h4>Company</h4>
               <ul>
-                <li><a href="/about">About</a></li>
-                <li><a href="/careers">Careers</a></li>
+                <li><Link to="/about">About</Link></li>
+                <li><Link to="/careers">Careers</Link></li>
                 <li><a href="/press">Press</a></li>
               </ul>
             </div>
@@ -51,9 +52,9 @@ export default function Footer() {
             <div className="link-column">
               <h4>Support</h4>
               <ul>
-                <li><a href="/help">Help Center</a></li>
-                <li><a href="/contact">Contact</a></li>
-                <li><a href="/privacy">Privacy</a></li>
+                <li><Link to="/help">Help Center</Link></li>
+                <li><Link to="/contact">Contact</Link></li>
+                <li><Link to="/privacy">Privacy</Link></li>
               </ul>
             </div>
           </div>
