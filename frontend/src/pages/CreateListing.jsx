@@ -246,7 +246,7 @@ export default function CreateListing() {
               {form.images.map((url, i) => (
                 <li key={i}>
                   <img src={url} alt="" className="listing-form-thumb" onError={(e) => e.target.style.display = 'none'} />
-                  <button type="button" onClick={() => removeImage(i)}>Remove</button>
+                  <button class="text-slate-700" type="button" onClick={() => removeImage(i)}>Remove</button>
                 </li>
               ))}
             </ul>

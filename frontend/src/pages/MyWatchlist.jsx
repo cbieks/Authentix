@@ -536,14 +536,16 @@ export default function MyWatchlist() {
 
                     {folders.length > 0 ? (
                       <div className="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <div className="text-xs font-semibold uppercase tracking-wide text-slate-700">
                           Add to folder
                         </div>
-                        <div className="relative flex gap-2" data-folder-picker-container="true">
-                          <button
-                            type="button"
-                            onClick={() => toggleFolderPicker(listing.id)}
-                            className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-left text-sm text-slate-900 outline-none"
+                        <div className="flex gap-2">
+                          <select
+                            value={selectedFolderId}
+                            onChange={(e) =>
+                              setTargetFolderByItem((prev) => ({ ...prev, [listing.id]: e.target.value }))
+                            }
+                            className="text-slate-700 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none"
                           >
                             {selectedCount > 0 ? `${selectedCount} selected` : 'Select'}
                           </button>
@@ -904,7 +906,7 @@ export default function MyWatchlist() {
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Example: Sneakers"
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900"
+                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-slate-900 text-slate-700"
               />
 
               <div className="flex justify-end gap-2">
