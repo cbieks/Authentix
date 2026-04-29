@@ -28,6 +28,35 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const HERO_ROTATE_MS = 5000
+const HERO_CTA_AB_KEY = 'ab_home_hero_cta_v1_variant'
+const HERO_CTA_AB_METRICS_KEY = 'ab_home_hero_cta_v1_metrics'
+
+function getOrCreateHeroCtaVariant() {
+  try {
+    const existing = localStorage.getItem(HERO_CTA_AB_KEY)
+    if (existing === 'A' || existing === 'B') return existing
+    const assigned = Math.random() < 0.5 ? 'A' : 'B'
+    localStorage.setItem(HERO_CTA_AB_KEY, assigned)
+    return assigned
+  } catch {
+    return 'A'
+  }
+}
+
+function trackHeroCtaEvent(variant, eventName) {
+  try {
+    const raw = localStorage.getItem(HERO_CTA_AB_METRICS_KEY)
+    const metrics = raw ? JSON.parse(raw) : {}
+    const bucket = metrics[variant] || { impressions: 0, ctaClicks: 0 }
+    if (eventName === 'impression') bucket.impressions += 1
+    if (eventName === 'cta_click') bucket.ctaClicks += 1
+    const next = { ...metrics, [variant]: bucket }
+    localStorage.setItem(HERO_CTA_AB_METRICS_KEY, JSON.stringify(next))
+    console.info('[ab:home_hero_cta_v1]', eventName, variant, next[variant])
+  } catch {
+    // Never block UX on analytics/storage failures.
+  }
+}
 
 function getTitle(item) {
   return item?.title || item?.name || 'Untitled'
@@ -67,6 +96,8 @@ export default function HeroCarousel({
   const [isPaused, setIsPaused] = useState(false)
   const [itemsPerSlide, setItemsPerSlide] = useState(3)
   const intervalRef = useRef(null)
+  const heroVariant = getOrCreateHeroCtaVariant()
+  const impressionTrackedRef = useRef(false)
 
   useEffect(() => {
     function updateLayout() {
@@ -90,6 +121,13 @@ export default function HeroCarousel({
   }, [products, itemsPerSlide])
 
   const total = slides.length
+
+  useEffect(() => {
+    if (!impressionTrackedRef.current) {
+      trackHeroCtaEvent(heroVariant, 'impression')
+      impressionTrackedRef.current = true
+    }
+  }, [heroVariant])
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -127,9 +165,15 @@ export default function HeroCarousel({
 
             <Link
               to="/explore"
-              className="inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+              onClick={() => trackHeroCtaEvent(heroVariant, 'cta_click')}
+              className={[
+                'inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition',
+                heroVariant === 'B'
+                  ? 'bg-white text-sky-700 ring-1 ring-sky-700 hover:bg-sky-50'
+                  : 'bg-slate-950 text-white hover:bg-slate-800',
+              ].join(' ')}
             >
-              Shop now
+              {heroVariant === 'B' ? 'Start exploring' : 'Shop now'}
             </Link>
           </div>
 
