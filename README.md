@@ -2,6 +2,8 @@
 
 Collectibles marketplace (Lego, trading cards, antiques, etc.) with a Spring Boot backend and React frontend.
 
+Visit the live production deployment [here!](https://www.authentixapp.com/)
+
 ## Project structure
 
 - **`backend/`** – Spring Boot API (Java 21, Maven). Run from this folder.
